@@ -67,7 +67,7 @@ func ProxyGetBufferBytes(instance common.WasmInstance, bufferType int32, start i
 		return WasmResultInvalidMemoryAccess.Int32()
 	}
 
-	err = instance.PutMemory(addr, uint64(length), buf.Bytes())
+	err = instance.PutMemory(addr, uint64(length), buf.Bytes()[start:])
 	if err != nil {
 		return WasmResultInternalFailure.Int32()
 	}
@@ -97,13 +97,12 @@ func ProxySetBufferBytes(instance common.WasmInstance, bufferType int32, start i
 	}
 
 	if start == 0 {
-		if length == 0 || int(length) >= buf.Len() {
-			buf.Drain(buf.Len())
-			_, err = buf.Write(content)
-		} else {
-			return WasmResultBadArgument.Int32()
+		if length == 0 { // prepend
+			content = append(content, buf.Bytes()...)
 		}
-	} else if int(start) >= buf.Len() {
+		buf.Drain(buf.Len())
+		_, err = buf.Write(content)
+	} else if int(start) >= buf.Len() { // append
 		_, err = buf.Write(content)
 	} else {
 		return WasmResultBadArgument.Int32()
