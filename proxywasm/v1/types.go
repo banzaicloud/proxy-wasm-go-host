@@ -24,6 +24,14 @@ const (
 	ActionPause    Action = 1
 )
 
+type PeerType uint32
+
+const (
+	PeerTypeUnknown PeerType = 0
+	PeerTypeLocal   PeerType = 1
+	PeerTypeRemote  PeerType = 2
+)
+
 type MapType int32
 
 const (
