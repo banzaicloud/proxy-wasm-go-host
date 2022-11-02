@@ -76,19 +76,21 @@ func (a *ABIContext) ProxyOnConfigure(pluginID int32, pluginConfigurationSize in
 }
 
 func (a *ABIContext) ProxyOnNewConnection(streamID int32) (Action, error) {
-	_, action, err := a.CallWasmFunction("proxy_on_new_connection", streamID)
+	res, action, err := a.CallWasmFunction("proxy_on_new_connection", streamID)
 	if err != nil {
 		return ActionPause, err
 	}
-	return action, nil
+
+	return overrideActionByRes(action, res), nil
 }
 
 func (a *ABIContext) ProxyOnDownstreamData(streamID int32, dataSize int32, endOfStream int32) (Action, error) {
-	_, action, err := a.CallWasmFunction("proxy_on_downstream_data", streamID, dataSize, endOfStream)
+	res, action, err := a.CallWasmFunction("proxy_on_downstream_data", streamID, dataSize, endOfStream)
 	if err != nil {
 		return ActionPause, err
 	}
-	return action, nil
+
+	return overrideActionByRes(action, res), nil
 }
 
 func (a *ABIContext) ProxyOnDownstreamClose(contextID int32, closeSource CloseSourceType) error {
@@ -100,11 +102,12 @@ func (a *ABIContext) ProxyOnDownstreamClose(contextID int32, closeSource CloseSo
 }
 
 func (a *ABIContext) ProxyOnUpstreamData(streamID int32, dataSize int32, endOfStream int32) (Action, error) {
-	_, action, err := a.CallWasmFunction("proxy_on_upstream_data", streamID, dataSize, endOfStream)
+	res, action, err := a.CallWasmFunction("proxy_on_upstream_data", streamID, dataSize, endOfStream)
 	if err != nil {
 		return ActionPause, err
 	}
-	return action, nil
+
+	return overrideActionByRes(action, res), nil
 }
 
 func (a *ABIContext) ProxyOnUpstreamClose(streamID int32, closeSource CloseSourceType) error {
@@ -116,67 +119,75 @@ func (a *ABIContext) ProxyOnUpstreamClose(streamID int32, closeSource CloseSourc
 }
 
 func (a *ABIContext) ProxyOnRequestHeaders(streamID int32, numHeaders int32, endOfStream int32) (Action, error) {
-	_, action, err := a.CallWasmFunction("proxy_on_request_headers", streamID, numHeaders, endOfStream)
+	res, action, err := a.CallWasmFunction("proxy_on_request_headers", streamID, numHeaders, endOfStream)
 	if err != nil {
 		return ActionPause, err
 	}
-	return action, nil
+
+	return overrideActionByRes(action, res), nil
 }
 
 func (a *ABIContext) ProxyOnRequestBody(streamID int32, bodySize int32, endOfStream int32) (Action, error) {
-	_, action, err := a.CallWasmFunction("proxy_on_request_body", streamID, bodySize, endOfStream)
+	res, action, err := a.CallWasmFunction("proxy_on_request_body", streamID, bodySize, endOfStream)
 	if err != nil {
 		return ActionPause, err
 	}
-	return action, nil
+
+	return overrideActionByRes(action, res), nil
 }
 
 func (a *ABIContext) ProxyOnRequestTrailers(streamID int32, numTrailers int32, endOfStream int32) (Action, error) {
-	_, action, err := a.CallWasmFunction("proxy_on_request_trailers", streamID, numTrailers, endOfStream)
+	res, action, err := a.CallWasmFunction("proxy_on_request_trailers", streamID, numTrailers, endOfStream)
 	if err != nil {
 		return ActionPause, err
 	}
-	return action, nil
+
+	return overrideActionByRes(action, res), nil
 }
 
 func (a *ABIContext) ProxyOnRequestMetadata(streamID int32, numElements int32) (Action, error) {
-	_, action, err := a.CallWasmFunction("proxy_on_request_metadata", streamID, numElements)
+	res, action, err := a.CallWasmFunction("proxy_on_request_metadata", streamID, numElements)
 	if err != nil {
 		return ActionPause, err
 	}
-	return action, nil
+
+	return overrideActionByRes(action, res), nil
 }
 
 func (a *ABIContext) ProxyOnResponseHeaders(streamID int32, numHeaders int32, endOfStream int32) (Action, error) {
-	_, action, err := a.CallWasmFunction("proxy_on_response_headers", streamID, numHeaders, endOfStream)
+	res, action, err := a.CallWasmFunction("proxy_on_response_headers", streamID, numHeaders, endOfStream)
 	if err != nil {
 		return ActionPause, err
 	}
-	return action, nil
+
+	return overrideActionByRes(action, res), nil
 }
 
 func (a *ABIContext) ProxyOnResponseBody(streamID int32, bodySize int32, endOfStream int32) (Action, error) {
-	_, action, err := a.CallWasmFunction("proxy_on_response_body", streamID, bodySize, endOfStream)
+	res, action, err := a.CallWasmFunction("proxy_on_response_body", streamID, bodySize, endOfStream)
 	if err != nil {
 		return ActionPause, err
 	}
-	return action, nil
+
+	return overrideActionByRes(action, res), nil
 }
 
 func (a *ABIContext) ProxyOnResponseTrailers(streamID int32, numTrailers int32, endOfStream int32) (Action, error) {
-	_, action, err := a.CallWasmFunction("proxy_on_response_trailers", streamID, numTrailers, endOfStream)
+	res, action, err := a.CallWasmFunction("proxy_on_response_trailers", streamID, numTrailers, endOfStream)
 	if err != nil {
 		return ActionPause, err
 	}
-	return action, nil
+
+	return overrideActionByRes(action, res), nil
 }
 
 func (a *ABIContext) ProxyOnResponseMetadata(streamID int32, numElements int32) (Action, error) {
-	_, action, err := a.CallWasmFunction("proxy_on_response_metadata", streamID, numElements)
+	res, action, err := a.CallWasmFunction("proxy_on_response_metadata", streamID, numElements)
 	if err != nil {
 		return ActionPause, err
 	}
-	return action, nil
+
+	return overrideActionByRes(action, res), nil
 }
 
 func (a *ABIContext) ProxyOnQueueReady(queueID int32) error {
@@ -241,4 +252,13 @@ func (a *ABIContext) ProxyOnCustomCallback(customCallbackID int32, parametersSiz
 		return 0, err
 	}
 	return res.(int32), nil
+}
+
+// overrideActionByRes overrides action if the provided res castable to Action and is bigger
+func overrideActionByRes(action Action, res interface{}) Action {
+	if _action, ok := res.(int32); ok && Action(_action) > action {
+		return Action(_action)
+	}
+
+	return action
 }
