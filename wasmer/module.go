@@ -25,7 +25,6 @@ import (
 type Module struct {
 	vm          *VM
 	module      *wasmerGo.Module
-	abiNameList []string
 	wasiVersion wasmerGo.WasiVersion
 	rawBytes    []byte
 }

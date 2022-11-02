@@ -39,7 +39,7 @@ func (m *myHeaderMap) Add(key, value string) { panic("implemented") }
 func (m *myHeaderMap) Del(key string) { panic("implemented") }
 
 func (m *myHeaderMap) Range(f func(key string, value string) bool) {
-	for k, _ := range m.realMap {
+	for k := range m.realMap {
 		v := m.realMap.Get(k)
 		f(k, v)
 	}

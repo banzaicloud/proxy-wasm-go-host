@@ -20,10 +20,7 @@ package v2
 import "mosn.io/proxy-wasm-go-host/proxywasm/common"
 
 func intToBool(i int32) bool {
-	if i == 0 {
-		return false
-	}
-	return true
+	return i == 1
 }
 
 func copyIntoInstance(instance common.WasmInstance, value []byte, retPtr int32, retSize int32) Result {
