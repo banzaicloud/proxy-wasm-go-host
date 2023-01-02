@@ -18,8 +18,8 @@
 package imports
 
 import (
-	"mosn.io/proxy-wasm-go-host/abi"
-	"mosn.io/proxy-wasm-go-host/api"
+	"github.com/banzaicloud/proxy-wasm-go-host/abi"
+	"github.com/banzaicloud/proxy-wasm-go-host/api"
 )
 
 func copyIntoInstance(instance api.WasmInstance, value string, retPtr int32, retSize int32) api.WasmResult {

@@ -24,7 +24,7 @@ import (
 	_ "embed"
 	"testing"
 
-	"mosn.io/proxy-wasm-go-host/runtime/wasmer"
+	"github.com/banzaicloud/proxy-wasm-go-host/runtime/wasmer"
 )
 
 func TestStartABIContextV1_wasmer(t *testing.T) {

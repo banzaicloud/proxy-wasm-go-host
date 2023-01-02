@@ -26,9 +26,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	"mosn.io/proxy-wasm-go-host/abi"
-	"mosn.io/proxy-wasm-go-host/api"
-	"mosn.io/proxy-wasm-go-host/runtime/wazero"
+	"github.com/banzaicloud/proxy-wasm-go-host/abi"
+	"github.com/banzaicloud/proxy-wasm-go-host/api"
+	"github.com/banzaicloud/proxy-wasm-go-host/runtime/wazero"
 )
 
 var (

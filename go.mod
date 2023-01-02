@@ -1,4 +1,4 @@
-module mosn.io/proxy-wasm-go-host
+module github.com/banzaicloud/proxy-wasm-go-host
 
 go 1.18
 

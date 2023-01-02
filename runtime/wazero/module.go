@@ -21,7 +21,8 @@ import (
 	"strings"
 
 	wazero "github.com/tetratelabs/wazero"
-	"mosn.io/proxy-wasm-go-host/api"
+
+	"github.com/banzaicloud/proxy-wasm-go-host/api"
 )
 
 type Module struct {

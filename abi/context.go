@@ -20,7 +20,7 @@ package abi
 import (
 	"errors"
 
-	"mosn.io/proxy-wasm-go-host/api"
+	"github.com/banzaicloud/proxy-wasm-go-host/api"
 )
 
 const ProxyWasmABI_0_1_0 string = "proxy_abi_version_0_1_0"

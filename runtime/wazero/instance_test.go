@@ -26,7 +26,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/tetratelabs/wabin/binary"
 	"github.com/tetratelabs/wabin/wasm"
-	"mosn.io/proxy-wasm-go-host/abi"
+
+	"github.com/banzaicloud/proxy-wasm-go-host/abi"
 )
 
 var simpleWasm = binary.EncodeModule(&wasm.Module{

@@ -26,10 +26,10 @@ import (
 
 	"mosn.io/pkg/log"
 
-	"mosn.io/proxy-wasm-go-host/abi"
-	"mosn.io/proxy-wasm-go-host/api"
-	"mosn.io/proxy-wasm-go-host/pkg/utils"
-	"mosn.io/proxy-wasm-go-host/runtime/wazero"
+	"github.com/banzaicloud/proxy-wasm-go-host/abi"
+	"github.com/banzaicloud/proxy-wasm-go-host/api"
+	"github.com/banzaicloud/proxy-wasm-go-host/pkg/utils"
+	"github.com/banzaicloud/proxy-wasm-go-host/runtime/wazero"
 )
 
 func init() {

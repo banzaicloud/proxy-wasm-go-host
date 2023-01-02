@@ -20,8 +20,8 @@ package imports
 import (
 	"context"
 
-	"mosn.io/proxy-wasm-go-host/api"
-	"mosn.io/proxy-wasm-go-host/pkg/utils"
+	"github.com/banzaicloud/proxy-wasm-go-host/api"
+	"github.com/banzaicloud/proxy-wasm-go-host/pkg/utils"
 )
 
 func (h *host) ProxyHttpCall(

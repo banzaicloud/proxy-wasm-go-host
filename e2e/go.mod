@@ -1,19 +1,19 @@
-module mosn.io/proxy-wasm-go-host/e2e
+module github.com/banzaicloud/proxy-wasm-go-host/e2e
 
 go 1.18
 
 replace (
-	mosn.io/proxy-wasm-go-host => ../
-	mosn.io/proxy-wasm-go-host/runtime/wasmer => ../runtime/wasmer
-	mosn.io/proxy-wasm-go-host/runtime/wazero => ../runtime/wazero
+	github.com/banzaicloud/proxy-wasm-go-host => ../
+	github.com/banzaicloud/proxy-wasm-go-host/runtime/wasmer => ../runtime/wasmer
+	github.com/banzaicloud/proxy-wasm-go-host/runtime/wazero => ../runtime/wazero
 )
 
 require (
+	github.com/banzaicloud/proxy-wasm-go-host v0.2.1-0.20221123073237-4f948bf02510
+	github.com/banzaicloud/proxy-wasm-go-host/runtime/wasmer v0.0.0-00010101000000-000000000000
+	github.com/banzaicloud/proxy-wasm-go-host/runtime/wazero v0.0.0-00010101000000-000000000000
 	github.com/tetratelabs/wabin v0.0.0-20220927005300-3b0fbf39a46a
 	mosn.io/pkg v1.3.0
-	mosn.io/proxy-wasm-go-host v0.2.1-0.20221123073237-4f948bf02510
-	mosn.io/proxy-wasm-go-host/runtime/wasmer v0.0.0-00010101000000-000000000000
-	mosn.io/proxy-wasm-go-host/runtime/wazero v0.0.0-00010101000000-000000000000
 )
 
 require (

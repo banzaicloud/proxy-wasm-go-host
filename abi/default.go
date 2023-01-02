@@ -23,7 +23,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"mosn.io/proxy-wasm-go-host/api"
+	"github.com/banzaicloud/proxy-wasm-go-host/api"
 )
 
 type DefaultImportsHandler struct{}

@@ -23,7 +23,7 @@ package e2e
 import (
 	"testing"
 
-	"mosn.io/proxy-wasm-go-host/runtime/wasmer"
+	"github.com/banzaicloud/proxy-wasm-go-host/runtime/wasmer"
 )
 
 func BenchmarkStartABIContext_wasmer(b *testing.B) {

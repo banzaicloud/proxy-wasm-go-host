@@ -17,7 +17,7 @@
 
 package utils
 
-import "mosn.io/proxy-wasm-go-host/api"
+import "github.com/banzaicloud/proxy-wasm-go-host/api"
 
 // CommonHeader is a simple implementation of HeaderMap.
 type CommonHeader map[string]string

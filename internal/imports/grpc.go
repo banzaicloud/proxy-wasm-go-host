@@ -20,8 +20,8 @@ package imports
 import (
 	"context"
 
-	"mosn.io/proxy-wasm-go-host/api"
-	utils "mosn.io/proxy-wasm-go-host/pkg/utils"
+	"github.com/banzaicloud/proxy-wasm-go-host/api"
+	utils "github.com/banzaicloud/proxy-wasm-go-host/pkg/utils"
 )
 
 // gRPC

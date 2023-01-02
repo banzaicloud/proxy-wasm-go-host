@@ -31,8 +31,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	wasmerGo "github.com/wasmerio/wasmer-go/wasmer"
 
-	"mosn.io/proxy-wasm-go-host/abi"
-	"mosn.io/proxy-wasm-go-host/api"
+	"github.com/banzaicloud/proxy-wasm-go-host/abi"
+	"github.com/banzaicloud/proxy-wasm-go-host/api"
 )
 
 func TestRegisterImports(t *testing.T) {

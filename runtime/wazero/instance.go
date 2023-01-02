@@ -27,9 +27,9 @@ import (
 	"github.com/tetratelabs/wazero/api"
 	"github.com/tetratelabs/wazero/imports/wasi_snapshot_preview1"
 
-	"mosn.io/proxy-wasm-go-host/abi"
-	pwapi "mosn.io/proxy-wasm-go-host/api"
-	importsv2 "mosn.io/proxy-wasm-go-host/internal/imports"
+	"github.com/banzaicloud/proxy-wasm-go-host/abi"
+	pwapi "github.com/banzaicloud/proxy-wasm-go-host/api"
+	importsv2 "github.com/banzaicloud/proxy-wasm-go-host/internal/imports"
 )
 
 var (

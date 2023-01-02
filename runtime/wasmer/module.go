@@ -24,7 +24,8 @@ import (
 	"strings"
 
 	wasmerGo "github.com/wasmerio/wasmer-go/wasmer"
-	"mosn.io/proxy-wasm-go-host/api"
+
+	"github.com/banzaicloud/proxy-wasm-go-host/api"
 )
 
 type Module struct {

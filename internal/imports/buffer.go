@@ -20,7 +20,7 @@ package imports
 import (
 	"context"
 
-	"mosn.io/proxy-wasm-go-host/api"
+	"github.com/banzaicloud/proxy-wasm-go-host/api"
 )
 
 func GetBuffer(instance api.WasmInstance, bufferType api.BufferType) api.IoBuffer {

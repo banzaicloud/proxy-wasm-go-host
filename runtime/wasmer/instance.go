@@ -34,9 +34,9 @@ import (
 
 	wasmerGo "github.com/wasmerio/wasmer-go/wasmer"
 
-	"mosn.io/proxy-wasm-go-host/abi"
-	"mosn.io/proxy-wasm-go-host/api"
-	importsv2 "mosn.io/proxy-wasm-go-host/internal/imports"
+	"github.com/banzaicloud/proxy-wasm-go-host/abi"
+	"github.com/banzaicloud/proxy-wasm-go-host/api"
+	importsv2 "github.com/banzaicloud/proxy-wasm-go-host/internal/imports"
 )
 
 var (
