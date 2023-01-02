@@ -66,29 +66,26 @@ func (a *context) SetInstance(instance api.WasmInstance) {
 
 var ErrInvalidResult = errors.New("invalid result")
 
-func (a *context) CallWasmFunction(funcName string, args ...interface{}) (interface{}, api.Action, error) {
+func (a *context) CallWasmFunction(funcName string, args ...interface{}) (interface{}, error) {
 	ff, err := a.instance.GetExportsFunc(funcName)
 	if err != nil {
-		return nil, api.ActionContinue, err
+		return api.ActionContinue, err
 	}
 
 	res, err := ff.Call(args...)
 	if err != nil {
 		a.instance.HandleError(err)
 
-		return nil, api.ActionContinue, err
+		return api.ActionContinue, err
 	}
 
-	// if we have sync call, e.g. HttpCall, then unlock the wasm instance and wait until it resp
-	Action := a.imports.Wait()
-
-	return res, Action, nil
+	return res, nil
 }
 
 // Configuration
 
 func (a *context) ProxyOnVmStart(rootContextID int32, vmConfigurationSize int32) (bool, error) {
-	res, _, err := a.CallWasmFunction("proxy_on_vm_start", rootContextID, vmConfigurationSize)
+	res, err := a.CallWasmFunction("proxy_on_vm_start", rootContextID, vmConfigurationSize)
 	if err != nil {
 		return false, err
 	}
@@ -101,7 +98,7 @@ func (a *context) ProxyOnVmStart(rootContextID int32, vmConfigurationSize int32)
 }
 
 func (a *context) ProxyOnConfigure(rootContextID int32, configurationSize int32) (bool, error) {
-	res, _, err := a.CallWasmFunction("proxy_on_configure", rootContextID, configurationSize)
+	res, err := a.CallWasmFunction("proxy_on_configure", rootContextID, configurationSize)
 	if err != nil {
 		return false, err
 	}
@@ -116,25 +113,25 @@ func (a *context) ProxyOnConfigure(rootContextID int32, configurationSize int32)
 // Misc
 
 func (a *context) ProxyOnLog(contextID int32) error {
-	_, _, err := a.CallWasmFunction("proxy_on_log", contextID)
+	_, err := a.CallWasmFunction("proxy_on_log", contextID)
 
 	return err
 }
 
 func (a *context) ProxyOnTick(rootContextID int32) error {
-	_, _, err := a.CallWasmFunction("proxy_on_tick", rootContextID)
+	_, err := a.CallWasmFunction("proxy_on_tick", rootContextID)
 
 	return err
 }
 
 func (a *context) ProxyOnHttpCallResponse(contextID int32, tokenID int32, headerCount int32, bodySize int32, trailerCount int32) error {
-	_, _, err := a.CallWasmFunction("proxy_on_http_call_response", contextID, tokenID, headerCount, bodySize, trailerCount)
+	_, err := a.CallWasmFunction("proxy_on_http_call_response", contextID, tokenID, headerCount, bodySize, trailerCount)
 
 	return err
 }
 
 func (a *context) ProxyOnQueueReady(rootContextID int32, queueID int32) error {
-	_, _, err := a.CallWasmFunction("proxy_on_queue_ready", rootContextID, queueID)
+	_, err := a.CallWasmFunction("proxy_on_queue_ready", rootContextID, queueID)
 
 	return err
 }
@@ -142,13 +139,13 @@ func (a *context) ProxyOnQueueReady(rootContextID int32, queueID int32) error {
 // Context
 
 func (a *context) ProxyOnContextCreate(contextID int32, rootContextID int32) error {
-	_, _, err := a.CallWasmFunction("proxy_on_context_create", contextID, rootContextID)
+	_, err := a.CallWasmFunction("proxy_on_context_create", contextID, rootContextID)
 
 	return err
 }
 
 func (a *context) ProxyOnDone(contextID int32) (bool, error) {
-	res, _, err := a.CallWasmFunction("proxy_on_done", contextID)
+	res, err := a.CallWasmFunction("proxy_on_done", contextID)
 	if err != nil {
 		return false, err
 	}
@@ -161,7 +158,7 @@ func (a *context) ProxyOnDone(contextID int32) (bool, error) {
 }
 
 func (a *context) ProxyOnDelete(contextID int32) error {
-	_, _, err := a.CallWasmFunction("proxy_on_delete", contextID)
+	_, err := a.CallWasmFunction("proxy_on_delete", contextID)
 
 	return err
 }
@@ -169,40 +166,40 @@ func (a *context) ProxyOnDelete(contextID int32) error {
 // L4
 
 func (a *context) ProxyOnNewConnection(contextID int32) (api.Action, error) {
-	_, Action, err := a.CallWasmFunction("proxy_on_new_connection", contextID)
+	action, err := a.CallWasmFunction("proxy_on_new_connection", contextID)
 	if err != nil {
 		return api.ActionPause, err
 	}
 
-	return Action, nil
+	return unwrapAction(action), nil
 }
 
 func (a *context) ProxyOnDownstreamData(contextID int32, dataSize int32, endOfStream int32) (api.Action, error) {
-	_, Action, err := a.CallWasmFunction("proxy_on_downstream_data", contextID, dataSize, endOfStream)
+	action, err := a.CallWasmFunction("proxy_on_downstream_data", contextID, dataSize, endOfStream)
 	if err != nil {
 		return api.ActionPause, err
 	}
 
-	return Action, nil
+	return unwrapAction(action), nil
 }
 
 func (a *context) ProxyOnDownstreamConnectionClose(contextID int32, peerType api.PeerType) error {
-	_, _, err := a.CallWasmFunction("proxy_on_downstream_connection_close", contextID, peerType)
+	_, err := a.CallWasmFunction("proxy_on_downstream_connection_close", contextID, peerType)
 
 	return err
 }
 
 func (a *context) ProxyOnUpstreamData(contextID int32, dataSize int32, endOfStream int32) (api.Action, error) {
-	_, Action, err := a.CallWasmFunction("proxy_on_upstream_data", contextID, dataSize, endOfStream)
+	action, err := a.CallWasmFunction("proxy_on_upstream_data", contextID, dataSize, endOfStream)
 	if err != nil {
 		return api.ActionPause, err
 	}
 
-	return Action, nil
+	return unwrapAction(action), nil
 }
 
 func (a *context) ProxyOnUpstreamConnectionClose(contextID int32, peerType api.PeerType) error {
-	_, _, err := a.CallWasmFunction("proxy_on_upstream_connection_close", contextID, peerType)
+	_, err := a.CallWasmFunction("proxy_on_upstream_connection_close", contextID, peerType)
 
 	return err
 }
@@ -210,25 +207,25 @@ func (a *context) ProxyOnUpstreamConnectionClose(contextID int32, peerType api.P
 // gRPC
 
 func (a *context) ProxyOnGrpcClose(contextID int32, calloutID int32, statusCode int32) error {
-	_, _, err := a.CallWasmFunction("proxy_on_grpc_close", contextID, calloutID, statusCode)
+	_, err := a.CallWasmFunction("proxy_on_grpc_close", contextID, calloutID, statusCode)
 
 	return err
 }
 
 func (a *context) ProxyOnGrpcReceiveInitialMetadata(contextID int32, tokenID int32, headerCount int32) error {
-	_, _, err := a.CallWasmFunction("proxy_on_grpc_receive_initial_metadata", contextID, tokenID, headerCount)
+	_, err := a.CallWasmFunction("proxy_on_grpc_receive_initial_metadata", contextID, tokenID, headerCount)
 
 	return err
 }
 
 func (a *context) ProxyOnGrpcReceiveTrailingMetadata(contextID int32, tokenID int32, trailerCount int32) error {
-	_, _, err := a.CallWasmFunction("proxy_on_grpc_receive_trailing_metadata", contextID, tokenID, trailerCount)
+	_, err := a.CallWasmFunction("proxy_on_grpc_receive_trailing_metadata", contextID, tokenID, trailerCount)
 
 	return err
 }
 
 func (a *context) ProxyOnGrpcReceive(contextID int32, tokenID int32, responseSize int32) error {
-	_, _, err := a.CallWasmFunction("proxy_on_grpc_receive", contextID, tokenID, responseSize)
+	_, err := a.CallWasmFunction("proxy_on_grpc_receive", contextID, tokenID, responseSize)
 
 	return err
 }
@@ -236,57 +233,65 @@ func (a *context) ProxyOnGrpcReceive(contextID int32, tokenID int32, responseSiz
 // HTTP request
 
 func (a *context) ProxyOnRequestBody(contextID int32, bodySize int32, endOfStream int32) (api.Action, error) {
-	_, Action, err := a.CallWasmFunction("proxy_on_request_body", contextID, bodySize, endOfStream)
+	action, err := a.CallWasmFunction("proxy_on_request_body", contextID, bodySize, endOfStream)
 	if err != nil {
 		return api.ActionPause, err
 	}
 
-	return Action, nil
+	return unwrapAction(action), nil
 }
 
 func (a *context) ProxyOnRequestHeaders(contextID int32, headerCount int32, endOfStream int32) (api.Action, error) {
-	_, Action, err := a.CallWasmFunction("proxy_on_request_headers", contextID, headerCount, endOfStream)
+	action, err := a.CallWasmFunction("proxy_on_request_headers", contextID, headerCount, endOfStream)
 	if err != nil {
 		return api.ActionPause, err
 	}
 
-	return Action, nil
+	return unwrapAction(action), nil
 }
 
 func (a *context) ProxyOnRequestTrailers(contextID int32, trailerCount int32) (api.Action, error) {
-	_, Action, err := a.CallWasmFunction("proxy_on_request_trailers", contextID, trailerCount)
+	action, err := a.CallWasmFunction("proxy_on_request_trailers", contextID, trailerCount)
 	if err != nil {
 		return api.ActionPause, err
 	}
 
-	return Action, nil
+	return unwrapAction(action), nil
 }
 
 // HTTP response
 
 func (a *context) ProxyOnResponseBody(contextID int32, bodySize int32, endOfStream int32) (api.Action, error) {
-	_, Action, err := a.CallWasmFunction("proxy_on_response_body", contextID, bodySize, endOfStream)
+	action, err := a.CallWasmFunction("proxy_on_response_body", contextID, bodySize, endOfStream)
 	if err != nil {
 		return api.ActionPause, err
 	}
 
-	return Action, nil
+	return unwrapAction(action), nil
 }
 
 func (a *context) ProxyOnResponseHeaders(contextID int32, headerCount int32, endOfStream int32) (api.Action, error) {
-	_, Action, err := a.CallWasmFunction("proxy_on_response_headers", contextID, headerCount, endOfStream)
+	action, err := a.CallWasmFunction("proxy_on_response_headers", contextID, headerCount, endOfStream)
 	if err != nil {
 		return api.ActionPause, err
 	}
 
-	return Action, nil
+	return unwrapAction(action), nil
 }
 
 func (a *context) ProxyOnResponseTrailers(contextID int32, trailerCount int32) (api.Action, error) {
-	_, Action, err := a.CallWasmFunction("proxy_on_response_trailers", contextID, trailerCount)
+	action, err := a.CallWasmFunction("proxy_on_response_trailers", contextID, trailerCount)
 	if err != nil {
 		return api.ActionPause, err
 	}
 
-	return Action, nil
+	return unwrapAction(action), nil
+}
+
+func unwrapAction(a interface{}) api.Action {
+	if v, ok := a.(int32); ok {
+		return api.Action(v)
+	}
+
+	return api.ActionContinue
 }
