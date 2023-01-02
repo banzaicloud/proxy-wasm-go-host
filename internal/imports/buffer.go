@@ -110,13 +110,12 @@ func (h *host) ProxySetBufferBytes(ctx context.Context, bufferType int32, start 
 
 	switch {
 	case start == 0:
-		if length == 0 || int(length) >= buf.Len() {
-			buf.Drain(buf.Len())
-			_, err = buf.Write(content)
-		} else {
-			return api.WasmResultBadArgument.Int32()
+		if length == 0 { // prepend
+			content = append(content, buf.Bytes()...)
 		}
-	case int(start) >= buf.Len():
+		buf.Drain(buf.Len())
+		_, err = buf.Write(content)
+	case int(start) >= buf.Len(): // append
 		_, err = buf.Write(content)
 	default:
 		return api.WasmResultBadArgument.Int32()
