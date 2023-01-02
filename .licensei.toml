@@ -1,4 +1,17 @@
-/*
+approved = [
+  "mit",
+  "apache-2.0",
+  "bsd-3-clause",
+  "bsd-2-clause",
+  "mpl-2.0",
+]
+
+ignored = []
+
+[header]
+ignoreFiles = []
+
+template = """/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,30 +27,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package wasmer
-
-import (
-	"io/ioutil"
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-)
-
-func TestDebugParseDwarf(t *testing.T) {
-	t.Parallel()
-
-	bytes, err := ioutil.ReadFile("./testdata/data.wasm")
-	assert.Nil(t, err)
-
-	debug := parseDwarf(bytes)
-	assert.NotNil(t, debug)
-	assert.NotNil(t, debug.data)
-	assert.Equal(t, debug.codeSectionOffset, 0x326) // code section start addr
-
-	lr := debug.getLineReader()
-	assert.NotNil(t, lr)
-
-	line := debug.SeekPC(uint64(0x2ef1)) // f3
-	assert.NotNil(t, line)
-}
+"""

@@ -33,5 +33,6 @@ cover.out
 .DS_Store
 testbin/*
 
+.licensei.cache
 .idea
 .vscode
