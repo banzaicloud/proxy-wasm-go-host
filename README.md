@@ -6,7 +6,7 @@ The GoLang implementation for [proxy-wasm](https://github.com/proxy-wasm/spec), 
 
 - build and run host
 ```bash
-cd example
+cd runtime/wazero/example
 go run .
 ```
 

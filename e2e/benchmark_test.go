@@ -1,0 +1,115 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package e2e
+
+import (
+	_ "embed"
+	"testing"
+
+	"mosn.io/pkg/log"
+
+	"mosn.io/proxy-wasm-go-host/api"
+	"mosn.io/proxy-wasm-go-host/runtime/wazero"
+)
+
+func init() {
+	log.DefaultLogger.SetLogLevel(log.ERROR)
+}
+
+func BenchmarkStartABIContext_wazero(b *testing.B) {
+	vm := wazero.NewVM()
+	defer vm.Close()
+
+	benchmarkStartABIContext(b, vm)
+}
+
+func benchmarkStartABIContext(b *testing.B, vm api.WasmVM) {
+	b.Helper()
+
+	module := vm.NewModule(binAddRequestHeader)
+
+	for i := 0; i < b.N; i++ {
+		instance := module.NewInstance()
+
+		if _, err := startABIContext(instance); err != nil {
+			b.Fatal(err)
+		} else {
+			instance.Stop()
+		}
+	}
+}
+
+func BenchmarkAddRequestHeader_wazero(b *testing.B) {
+	vm := wazero.NewVM()
+	defer vm.Close()
+
+	benchmarkAddRequestHeader(b, vm)
+}
+
+func benchmarkAddRequestHeader(b *testing.B, vm api.WasmVM) {
+	b.Helper()
+
+	module := vm.NewModule(binAddRequestHeader)
+	instance := module.NewInstance()
+	defer instance.Stop()
+
+	benchmark(b, instance, testAddRequestHeader)
+}
+
+func benchmark(b *testing.B, instance api.WasmInstance, test func(wasmCtx api.ABIContext, contextID int32) error) {
+	b.Helper()
+
+	wasmCtx, err := startABIContext(instance)
+	if err != nil {
+		b.Fatal(err)
+	}
+	defer wasmCtx.GetInstance().Stop()
+
+	exports := wasmCtx.GetExports()
+
+	// make the root context
+	rootContextID := int32(1)
+	if err = exports.ProxyOnContextCreate(rootContextID, int32(0)); err != nil {
+		b.Fatal(err)
+	}
+
+	// lock wasm vm instance for exclusive ownership
+	wasmCtx.GetInstance().Lock(wasmCtx)
+	defer wasmCtx.GetInstance().Unlock()
+
+	// Time the guest call for context create and delete, which happens per-request.
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		contextID := int32(2)
+		if err = exports.ProxyOnContextCreate(contextID, rootContextID); err != nil {
+			b.Fatal(err)
+		}
+
+		if err = test(wasmCtx, contextID); err != nil {
+			b.Fatal(err)
+		}
+
+		if _, err = exports.ProxyOnDone(contextID); err != nil {
+			b.Fatal(err)
+		}
+
+		if err = exports.ProxyOnDelete(contextID); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
