@@ -18,9 +18,12 @@
 package wazero
 
 import (
+	"context"
 	"strings"
 
+	"github.com/go-logr/logr"
 	wazero "github.com/tetratelabs/wazero"
+	klog "k8s.io/klog/v2"
 
 	"github.com/banzaicloud/proxy-wasm-go-host/api"
 )
@@ -29,31 +32,47 @@ type Module struct {
 	vm       *VM
 	module   wazero.CompiledModule
 	rawBytes []byte
+	ctx      context.Context
+	logger   logr.Logger
 }
 
-func NewModule(vm *VM, module wazero.CompiledModule, wasmBytes []byte) *Module {
+func ModuleWithLogger(logger logr.Logger) ModuleOptions {
+	return func(m *Module) {
+		m.logger = logger
+	}
+}
+
+type ModuleOptions func(module *Module)
+
+func NewModule(ctx context.Context, vm *VM, module wazero.CompiledModule, wasmBytes []byte, options ...ModuleOptions) *Module {
 	m := &Module{
 		vm:       vm,
 		module:   module,
 		rawBytes: wasmBytes,
+		ctx:      ctx,
 	}
 
-	m.Init()
+	for _, option := range options {
+		option(m)
+	}
+
+	if vm.logger == (logr.Logger{}) {
+		vm.logger = klog.Background()
+	}
 
 	return m
 }
 
-func (w *Module) Init() {
+func (m *Module) Init() {}
+
+func (m *Module) NewInstance() (api.WasmInstance, error) {
+	return NewInstance(m.ctx, m.vm, m, InstanceWithLogger(m.logger)), nil
 }
 
-func (w *Module) NewInstance() api.WasmInstance {
-	return NewInstance(w.vm, w)
-}
-
-func (w *Module) GetABINameList() []string {
+func (m *Module) GetABINameList() []string {
 	abiNameList := make([]string, 0)
 
-	exportList := w.module.ExportedFunctions()
+	exportList := m.module.ExportedFunctions()
 
 	for export := range exportList {
 		if strings.HasPrefix(export, "proxy_abi") {

@@ -26,7 +26,7 @@ type WasmVM interface {
 	Init()
 
 	// NewModule compiles the 'guest' into a wasm module
-	NewModule(guest []byte) WasmModule
+	NewModule(guest []byte) (WasmModule, error)
 
 	// Close avoids leaking resources such as memory-mapped files.
 	Close() error
@@ -38,7 +38,7 @@ type WasmModule interface {
 	Init()
 
 	// NewInstance instantiates and returns a new wasm instance
-	NewInstance() WasmInstance
+	NewInstance() (WasmInstance, error)
 
 	// GetABINameList returns the abi name list exported by wasm module
 	//
@@ -48,10 +48,6 @@ type WasmModule interface {
 
 // WasmInstance represents the wasm instance
 type WasmInstance interface { //nolint:interfacebloat
-	// RegisterImports adds host functions used by the guest for the given
-	// proxy-wasm ABI name. This must be called prior to Start.
-	RegisterImports(abiName string) error
-
 	// Start starts the wasm instance
 	Start() error
 

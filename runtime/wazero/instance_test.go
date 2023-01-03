@@ -19,6 +19,7 @@
 package wazero
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -26,8 +27,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/tetratelabs/wabin/binary"
 	"github.com/tetratelabs/wabin/wasm"
-
-	"github.com/banzaicloud/proxy-wasm-go-host/abi"
 )
 
 var simpleWasm = binary.EncodeModule(&wasm.Module{
@@ -41,31 +40,18 @@ var simpleWasm = binary.EncodeModule(&wasm.Module{
 	},
 })
 
-func TestRegisterImports(t *testing.T) {
-	t.Parallel()
-
-	vm := NewVM()
-	defer vm.Close()
-
-	require.Equal(t, vm.Name(), "wazero")
-
-	module := vm.NewModule(simpleWasm)
-	ins := module.NewInstance().(*Instance)
-	defer ins.Stop()
-
-	require.Nil(t, ins.RegisterImports(abi.ProxyWasmABI_0_2_1))
-	require.Nil(t, ins.Start())
-	require.Equal(t, ins.RegisterImports(abi.ProxyWasmABI_0_2_1), ErrInstanceAlreadyStart)
-}
-
 func TestInstanceMem(t *testing.T) {
 	t.Parallel()
 
-	vm := NewVM()
+	vm := NewVM(context.Background())
 	defer vm.Close()
 
-	module := vm.NewModule(simpleWasm)
-	ins := module.NewInstance()
+	module, err := vm.NewModule(simpleWasm)
+	require.Nil(t, err)
+
+	ins, err := module.NewInstance()
+	require.Nil(t, err)
+
 	defer ins.Stop()
 
 	require.Nil(t, ins.Start())
@@ -94,11 +80,15 @@ func TestInstanceMem(t *testing.T) {
 func TestInstanceData(t *testing.T) {
 	t.Parallel()
 
-	vm := NewVM()
+	vm := NewVM(context.Background())
 	defer vm.Close()
 
-	module := vm.NewModule(simpleWasm)
-	ins := module.NewInstance()
+	module, err := vm.NewModule(simpleWasm)
+	require.Nil(t, err)
+
+	ins, err := module.NewInstance()
+	require.Nil(t, err)
+
 	defer ins.Stop()
 
 	require.Nil(t, ins.Start())
@@ -120,11 +110,13 @@ func TestRefCount(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	vm := NewVM()
+	vm := NewVM(context.Background())
 	defer vm.Close()
 
-	module := vm.NewModule(simpleWasm)
-	ins := NewInstance(vm.(*VM), module.(*Module))
+	module, err := vm.NewModule(simpleWasm)
+	require.Nil(t, err)
+
+	ins := NewInstance(context.Background(), vm.(*VM), module.(*Module))
 
 	require.False(t, ins.Acquire())
 

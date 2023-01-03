@@ -19,6 +19,7 @@
 package e2e
 
 import (
+	"context"
 	_ "embed"
 	"fmt"
 	"strconv"
@@ -39,7 +40,7 @@ func init() {
 func TestStartABIContext_wazero(t *testing.T) {
 	t.Parallel()
 
-	vm := wazero.NewVM()
+	vm := wazero.NewVM(context.Background())
 	defer vm.Close()
 
 	testStartABIContext(t, vm)
@@ -48,8 +49,16 @@ func TestStartABIContext_wazero(t *testing.T) {
 func testStartABIContext(t *testing.T, vm api.WasmVM) {
 	t.Helper()
 
-	module := vm.NewModule(binAddRequestHeader)
-	instance := module.NewInstance()
+	module, err := vm.NewModule(binAddRequestHeader)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	instance, err := module.NewInstance()
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	defer instance.Stop()
 
 	if _, err := startABIContext(instance); err != nil {
@@ -61,11 +70,6 @@ func startABIContext(instance api.WasmInstance) (wasmCtx api.ABIContext, err err
 	// create ABI context
 	wasmCtx = abi.NewContext(&abi.DefaultImportsHandler{}, instance)
 
-	// register ABI imports into the wasm vm instance
-	if err = instance.RegisterImports(wasmCtx.Name()); err != nil {
-		return
-	}
-
 	// start the wasm vm instance
 	err = instance.Start()
 	return
@@ -74,7 +78,7 @@ func startABIContext(instance api.WasmInstance) (wasmCtx api.ABIContext, err err
 func TestAddRequestHeader_wazero(t *testing.T) {
 	t.Parallel()
 
-	vm := wazero.NewVM()
+	vm := wazero.NewVM(context.Background())
 	defer vm.Close()
 
 	testV1(t, vm, testAddRequestHeader)
@@ -101,8 +105,16 @@ func testAddRequestHeader(wasmCtx api.ABIContext, contextID int32) error {
 func testV1(t *testing.T, vm api.WasmVM, test func(wasmCtx api.ABIContext, contextID int32) error) {
 	t.Helper()
 
-	module := vm.NewModule(binAddRequestHeader)
-	instance := module.NewInstance()
+	module, err := vm.NewModule(binAddRequestHeader)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	instance, err := module.NewInstance()
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	defer instance.Stop()
 
 	wasmCtx, err := startABIContext(instance)

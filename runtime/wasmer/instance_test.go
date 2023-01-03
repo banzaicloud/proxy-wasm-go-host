@@ -26,28 +26,11 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	wasmerGo "github.com/wasmerio/wasmer-go/wasmer"
 
-	"github.com/banzaicloud/proxy-wasm-go-host/abi"
 	"github.com/banzaicloud/proxy-wasm-go-host/api"
 )
-
-func TestRegisterImports(t *testing.T) {
-	t.Parallel()
-
-	vm := NewWasmerVM()
-	defer vm.Close()
-
-	assert.Equal(t, vm.Name(), "wasmer")
-
-	module := vm.NewModule([]byte(`(module (func (export "_start")))`))
-	ins := module.NewInstance().(*Instance)
-	defer ins.Stop()
-
-	assert.Nil(t, ins.RegisterImports(abi.ProxyWasmABI_0_2_1))
-	assert.Nil(t, ins.Start())
-	assert.Equal(t, ins.RegisterImports(abi.ProxyWasmABI_0_2_1), ErrInstanceAlreadyStart)
-}
 
 func Test_registerFunc(t *testing.T) {
 	t.Parallel()
@@ -57,8 +40,19 @@ func Test_registerFunc(t *testing.T) {
 
 	assert.Equal(t, vm.Name(), "wasmer")
 
-	module := vm.NewModule([]byte(`(module (func (export "_start")))`))
-	ins := module.NewInstance().(*Instance)
+	module, err := vm.NewModule([]byte(`
+		(module
+			(memory (;0;) 1 1)
+			(export "memory" (memory 0))
+			(import "wasi_snapshot_preview1" "args_get" (func (param i32 i32) (result i32)))
+			(func (export "_start")))
+	`))
+	require.Nil(t, err)
+
+	_ins, err := module.NewInstance()
+	require.Nil(t, err)
+	ins := _ins.(*Instance)
+
 	defer ins.Stop()
 
 	// invalid namespace
@@ -86,14 +80,22 @@ func Test_registerFuncRecoverPanic(t *testing.T) {
 	vm := NewWasmerVM()
 	defer vm.Close()
 
-	module := vm.NewModule([]byte(`
+	module, err := vm.NewModule([]byte(`
 			(module
+				(memory (;0;) 1 1)
+				(export "memory" (memory 0))
 				(import "TestRegisterFuncRecover" "somePanic" (func $somePanic (result i32)))
+				(import "wasi_snapshot_preview1" "args_get" (func (param i32 i32) (result i32)))
 				(func (export "_start"))
 				(func (export "panicTrigger") (param) (result i32)
 					call $somePanic))
 	`))
-	ins := module.NewInstance().(*Instance)
+	require.Nil(t, err)
+
+	_ins, err := module.NewInstance()
+	require.Nil(t, err)
+	ins := _ins.(*Instance)
+
 	defer ins.Stop()
 
 	assert.Nil(t, ins.registerFunc("TestRegisterFuncRecover", "somePanic", func(context.Context) int32 {
@@ -116,12 +118,20 @@ func TestInstanceMalloc(t *testing.T) {
 	vm := NewWasmerVM()
 	defer vm.Close()
 
-	module := vm.NewModule([]byte(`
+	module, err := vm.NewModule([]byte(`
 			(module
+				(memory (;0;) 1 1)
+				(export "memory" (memory 0))
+				(import "wasi_snapshot_preview1" "args_get" (func (param i32 i32) (result i32)))
 				(func (export "_start"))
 				(func (export "malloc") (param i32) (result i32) i32.const 10))
 	`))
-	ins := module.NewInstance().(*Instance)
+	require.Nil(t, err)
+
+	_ins, err := module.NewInstance()
+	require.Nil(t, err)
+	ins := _ins.(*Instance)
+
 	defer ins.Stop()
 
 	assert.Nil(t, ins.registerFunc("TestRegisterFuncRecover", "somePanic", func(instance api.WasmInstance) int32 {
@@ -141,8 +151,18 @@ func TestInstanceMem(t *testing.T) {
 	vm := NewWasmerVM()
 	defer vm.Close()
 
-	module := vm.NewModule([]byte(`(module (memory (export "memory") 1) (func (export "_start")))`))
-	ins := module.NewInstance()
+	module, err := vm.NewModule([]byte(`
+		(module
+			(memory (;0;) 1 1)
+			(export "memory" (memory 0))
+			(import "wasi_snapshot_preview1" "args_get" (func (param i32 i32) (result i32)))
+			(func (export "_start")))
+		`))
+	require.Nil(t, err)
+
+	ins, err := module.NewInstance()
+	require.Nil(t, err)
+
 	defer ins.Stop()
 
 	assert.Nil(t, ins.Start())
@@ -174,11 +194,18 @@ func TestInstanceData(t *testing.T) {
 	vm := NewWasmerVM()
 	defer vm.Close()
 
-	module := vm.NewModule([]byte(`
+	module, err := vm.NewModule([]byte(`
 			(module
+				(memory (;0;) 1 1)
+				(export "memory" (memory 0))
+				(import "wasi_snapshot_preview1" "args_get" (func (param i32 i32) (result i32)))
 				(func (export "_start")))
 	`))
-	ins := module.NewInstance()
+	require.Nil(t, err)
+
+	ins, err := module.NewInstance()
+	require.Nil(t, err)
+
 	defer ins.Stop()
 
 	assert.Nil(t, ins.Start())
@@ -224,8 +251,17 @@ func TestRefCount(t *testing.T) {
 	vm := NewWasmerVM()
 	defer vm.Close()
 
-	module := vm.NewModule([]byte(`(module (func (export "_start")))`))
-	ins := NewWasmerInstance(vm.(*VM), module.(*Module))
+	module, err := vm.NewModule([]byte(`
+		(module
+			(memory (;0;) 1 1)
+			(export "memory" (memory 0))
+			(import "wasi_snapshot_preview1" "args_get" (func (param i32 i32) (result i32)))
+			(func (export "_start")))
+	`))
+	require.Nil(t, err)
+
+	ins, err := NewWasmerInstance(vm.(*VM), module.(*Module))
+	require.Nil(t, err)
 
 	assert.False(t, ins.Acquire())
 

@@ -1,5 +1,3 @@
-TAGS=wasmer
-
 include ../../common.mk
 
 .PHONY: help

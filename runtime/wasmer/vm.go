@@ -18,7 +18,10 @@
 package wasmer
 
 import (
+	"emperror.dev/errors"
+	"github.com/go-logr/logr"
 	wasmerGo "github.com/wasmerio/wasmer-go/wasmer"
+	"k8s.io/klog/v2"
 
 	"github.com/banzaicloud/proxy-wasm-go-host/api"
 )
@@ -26,11 +29,28 @@ import (
 type VM struct {
 	engine *wasmerGo.Engine
 	store  *wasmerGo.Store
+	logger logr.Logger
 }
 
-func NewWasmerVM() api.WasmVM {
+func VMWithLogger(logger logr.Logger) VMOptions {
+	return func(vm *VM) {
+		vm.logger = logger
+	}
+}
+
+type VMOptions func(vm *VM)
+
+func NewWasmerVM(options ...VMOptions) api.WasmVM {
 	vm := &VM{}
 	vm.Init()
+
+	for _, option := range options {
+		option(vm)
+	}
+
+	if vm.logger == (logr.Logger{}) {
+		vm.logger = klog.Background()
+	}
 
 	return vm
 }
@@ -44,18 +64,17 @@ func (w *VM) Init() {
 	w.store = wasmerGo.NewStore(w.engine)
 }
 
-func (w *VM) NewModule(wasmBytes []byte) api.WasmModule {
+func (w *VM) NewModule(wasmBytes []byte) (api.WasmModule, error) {
 	if len(wasmBytes) == 0 {
-		return nil
+		return nil, errors.New("wasm was empty")
 	}
 
 	m, err := wasmerGo.NewModule(w.store, wasmBytes)
 	if err != nil {
-		// log.DefaultLogger.Errorf("[wasmer][vm] fail to new module, err: %v", err)
-		return nil
+		return nil, errors.WrapIf(err, "could not instantiate module")
 	}
 
-	return NewWasmerModule(w, m, wasmBytes)
+	return NewWasmerModule(w, m, wasmBytes, ModuleWithLogger(w.logger)), nil
 }
 
 // Close implements io.Closer

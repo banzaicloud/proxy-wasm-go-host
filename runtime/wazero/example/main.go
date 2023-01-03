@@ -18,6 +18,8 @@
 package main
 
 import (
+	"context"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -25,6 +27,8 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"k8s.io/klog/v2"
 
 	"github.com/banzaicloud/proxy-wasm-go-host/abi"
 	"github.com/banzaicloud/proxy-wasm-go-host/api"
@@ -112,6 +116,9 @@ func ServeHTTP(w http.ResponseWriter, r *http.Request) {
 var vm api.WasmVM
 
 func main() {
+	klog.InitFlags(nil)
+	flag.Parse()
+
 	defer func() {
 		if vm != nil {
 			vm.Close()
@@ -144,24 +151,20 @@ func getWasmContext() api.ABIContext {
 			log.Panicln(err)
 		}
 
-		vm = wazero.NewVM()
+		vm = wazero.NewVM(context.Background(), wazero.VMWithLogger(klog.Background()))
 
-		module := vm.NewModule(guest)
+		module, err := vm.NewModule(guest)
+		if err != nil {
+			log.Panicln(err)
+		}
 
-		instance := module.NewInstance()
+		instance, err := module.NewInstance()
+		if err != nil {
+			log.Panicln(err)
+		}
 
 		// create ABI context
 		wasmCtx = abi.NewContext(&abi.DefaultImportsHandler{}, instance)
-
-		abiName := wasmCtx.Name()
-		if len(instance.GetModule().GetABINameList()) > 0 {
-			abiName = instance.GetModule().GetABINameList()[0]
-		}
-
-		// register ABI imports into the wasm vm instance
-		if err = instance.RegisterImports(abiName); err != nil {
-			log.Panicln(err)
-		}
 
 		// start the wasm vm instance
 		if err = instance.Start(); err != nil {

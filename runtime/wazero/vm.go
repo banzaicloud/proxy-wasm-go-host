@@ -20,18 +20,41 @@ package wazero
 import (
 	"context"
 
+	"emperror.dev/errors"
+	"github.com/go-logr/logr"
 	wazero "github.com/tetratelabs/wazero"
+	klog "k8s.io/klog/v2"
 
 	"github.com/banzaicloud/proxy-wasm-go-host/api"
 )
 
 type VM struct {
 	runtime wazero.Runtime
+	ctx     context.Context
+	logger  logr.Logger
 }
 
-func NewVM() api.WasmVM {
-	vm := &VM{}
-	vm.Init()
+func VMWithLogger(logger logr.Logger) VMOptions {
+	return func(vm *VM) {
+		vm.logger = logger
+	}
+}
+
+type VMOptions func(vm *VM)
+
+func NewVM(ctx context.Context, options ...VMOptions) api.WasmVM {
+	vm := &VM{
+		runtime: wazero.NewRuntime(ctx),
+		ctx:     ctx,
+	}
+
+	for _, option := range options {
+		option(vm)
+	}
+
+	if vm.logger == (logr.Logger{}) {
+		vm.logger = klog.Background()
+	}
 
 	return vm
 }
@@ -40,29 +63,25 @@ func (w *VM) Name() string {
 	return "wazero"
 }
 
-var ctx = context.Background()
+func (w *VM) Init() {}
 
-func (w *VM) Init() {
-	w.runtime = wazero.NewRuntime(ctx)
-}
-
-func (w *VM) NewModule(wasmBytes []byte) api.WasmModule {
+func (w *VM) NewModule(wasmBytes []byte) (api.WasmModule, error) {
 	if len(wasmBytes) == 0 {
-		panic("wasm was empty")
+		return nil, errors.New("wasm was empty")
 	}
 
-	m, err := w.runtime.CompileModule(ctx, wasmBytes)
+	m, err := w.runtime.CompileModule(w.ctx, wasmBytes)
 	if err != nil {
-		panic(err)
+		return nil, errors.WrapIf(err, "could not compile module")
 	}
 
-	return NewModule(w, m, wasmBytes)
+	return NewModule(w.ctx, w, m, wasmBytes, ModuleWithLogger(w.logger)), nil
 }
 
 // Close implements io.Closer
 func (w *VM) Close() (err error) {
 	if r := w.runtime; r != nil {
-		err = r.Close(ctx)
+		err = r.Close(w.ctx)
 	}
 	return
 }

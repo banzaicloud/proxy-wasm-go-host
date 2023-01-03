@@ -18,6 +18,7 @@
 package e2e
 
 import (
+	"context"
 	_ "embed"
 	"testing"
 
@@ -32,7 +33,7 @@ func init() {
 }
 
 func BenchmarkStartABIContext_wazero(b *testing.B) {
-	vm := wazero.NewVM()
+	vm := wazero.NewVM(context.Background())
 	defer vm.Close()
 
 	benchmarkStartABIContext(b, vm)
@@ -41,10 +42,16 @@ func BenchmarkStartABIContext_wazero(b *testing.B) {
 func benchmarkStartABIContext(b *testing.B, vm api.WasmVM) {
 	b.Helper()
 
-	module := vm.NewModule(binAddRequestHeader)
+	module, err := vm.NewModule(binAddRequestHeader)
+	if err != nil {
+		b.Fatal(err)
+	}
 
 	for i := 0; i < b.N; i++ {
-		instance := module.NewInstance()
+		instance, err := module.NewInstance()
+		if err != nil {
+			b.Fatal(err)
+		}
 
 		if _, err := startABIContext(instance); err != nil {
 			b.Fatal(err)
@@ -55,7 +62,7 @@ func benchmarkStartABIContext(b *testing.B, vm api.WasmVM) {
 }
 
 func BenchmarkAddRequestHeader_wazero(b *testing.B) {
-	vm := wazero.NewVM()
+	vm := wazero.NewVM(context.Background())
 	defer vm.Close()
 
 	benchmarkAddRequestHeader(b, vm)
@@ -64,8 +71,16 @@ func BenchmarkAddRequestHeader_wazero(b *testing.B) {
 func benchmarkAddRequestHeader(b *testing.B, vm api.WasmVM) {
 	b.Helper()
 
-	module := vm.NewModule(binAddRequestHeader)
-	instance := module.NewInstance()
+	module, err := vm.NewModule(binAddRequestHeader)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	instance, err := module.NewInstance()
+	if err != nil {
+		b.Fatal(err)
+	}
+
 	defer instance.Stop()
 
 	benchmark(b, instance, testAddRequestHeader)
