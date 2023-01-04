@@ -2,6 +2,8 @@
 
 The GoLang implementation for [proxy-wasm](https://github.com/proxy-wasm/spec), enabling developer to run proxy-wasm extensions in Go.
 
+This project is a restructured version of the original [MOSN implementation](https://github.com/mosn/proxy-wasm-go-host). It follows the actual C++ host and sdk implementation of proxy wasm as there is no official spec of proxy wasm.
+
 ## Run Example
 
 - build and run host
