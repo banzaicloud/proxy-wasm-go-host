@@ -4,5 +4,6 @@ use (
 	.
 	./e2e
 	./runtime/wasmer
+	./runtime/wasmtime
 	./runtime/wazero
 )
