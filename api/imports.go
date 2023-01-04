@@ -89,7 +89,7 @@ type Imports interface { //nolint:interfacebloat
 
 	// gRPC
 	ProxyGrpcCall(grpcServiceData int32, grpcServiceSize int32, serviceNameData int32, serviceNameSize int32, methodName int32, methodSize int32, initialMetadataPtr int32, initialMetadataSize int32, grpcMessage int32, grpcMessageSize int32, timeoutMilliseconds int32, returnCalloutID int32) int32
-	ProxyGrpcStream(grpcServiceData int32, grpcServiceSize int32, serviceNameData int32, serviceNameSize int32, methodName int32, methodSize int32, initialMetadataPtr int32, initialMetadataSize int32, grpcMessage int32, grpcMessageSize int32, returnStreamID int32) int32
+	ProxyGrpcStream(grpcServiceData int32, grpcServiceSize int32, serviceNameData int32, serviceNameSize int32, methodName int32, methodSize int32, initialMetadataPtr int32, initialMetadataSize int32, returnStreamID int32) int32
 	ProxyGrpcSend(streamID int32, messagePtr int32, messageSize int32, endOfStream int32) int32
 	ProxyGrpcCancel(calloutID int32) int32
 	ProxyGrpcClose(calloutID int32) int32

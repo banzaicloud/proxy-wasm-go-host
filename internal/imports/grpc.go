@@ -86,8 +86,6 @@ func (h *host) ProxyGrpcStream(
 	methodSize int32,
 	initialMetadataPtr int32,
 	initialMetadataSize int32,
-	grpcMessage int32,
-	grpcMessageSize int32,
 	returnStreamID int32,
 ) int32 {
 	instance := h.Instance

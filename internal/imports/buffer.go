@@ -72,7 +72,7 @@ func (h *host) ProxyGetBufferBytes(bufferType int32, start int32, length int32, 
 		return api.WasmResultInvalidMemoryAccess.Int32()
 	}
 
-	err = instance.PutMemory(addr, uint64(length), buf.Bytes())
+	err = instance.PutMemory(addr, uint64(length), buf.Bytes()[start:])
 	if err != nil {
 		return api.WasmResultInternalFailure.Int32()
 	}

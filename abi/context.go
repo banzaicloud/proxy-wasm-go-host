@@ -184,7 +184,7 @@ func (a *context) ProxyOnDownstreamData(contextID int32, dataSize int32, endOfSt
 	return unwrapAction(action), nil
 }
 
-func (a *context) ProxyOnDownstreamConnectionClose(contextID int32, peerType api.PeerType) error {
+func (a *context) ProxyOnDownstreamConnectionClose(contextID int32, peerType int32) error {
 	_, err := a.CallWasmFunction("proxy_on_downstream_connection_close", contextID, peerType)
 
 	return err
@@ -199,7 +199,7 @@ func (a *context) ProxyOnUpstreamData(contextID int32, dataSize int32, endOfStre
 	return unwrapAction(action), nil
 }
 
-func (a *context) ProxyOnUpstreamConnectionClose(contextID int32, peerType api.PeerType) error {
+func (a *context) ProxyOnUpstreamConnectionClose(contextID int32, peerType int32) error {
 	_, err := a.CallWasmFunction("proxy_on_upstream_connection_close", contextID, peerType)
 
 	return err

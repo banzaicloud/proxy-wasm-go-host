@@ -36,9 +36,9 @@ type Exports interface { //nolint:interfacebloat
 	// L4
 	ProxyOnNewConnection(contextID int32) (Action, error)
 	ProxyOnDownstreamData(contextID int32, dataSize int32, endOfStream int32) (Action, error)
-	ProxyOnDownstreamConnectionClose(contextID int32, peerType PeerType) error
+	ProxyOnDownstreamConnectionClose(contextID int32, peerType int32) error
 	ProxyOnUpstreamData(contextID int32, dataSize int32, endOfStream int32) (Action, error)
-	ProxyOnUpstreamConnectionClose(contextID int32, peerType PeerType) error
+	ProxyOnUpstreamConnectionClose(contextID int32, peerType int32) error
 
 	// gRPC
 	ProxyOnGrpcClose(contextID int32, tokenID int32, statusCode int32) error
