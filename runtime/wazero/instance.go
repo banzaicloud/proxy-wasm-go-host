@@ -31,7 +31,7 @@ import (
 
 	"github.com/banzaicloud/proxy-wasm-go-host/abi"
 	pwapi "github.com/banzaicloud/proxy-wasm-go-host/api"
-	importsv2 "github.com/banzaicloud/proxy-wasm-go-host/internal/imports"
+	"github.com/banzaicloud/proxy-wasm-go-host/internal/imports"
 )
 
 var (
@@ -255,7 +255,7 @@ func (i *Instance) registerImports() error {
 		}
 	}
 
-	hostFunctions = importsv2.HostFunctions
+	hostFunctions = imports.HostFunctions
 	b := r.NewHostModuleBuilder(module)
 	for n, f := range hostFunctions(i) {
 		b.NewFunctionBuilder().WithFunc(f).Export(n)

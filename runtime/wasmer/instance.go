@@ -32,7 +32,7 @@ import (
 
 	"github.com/banzaicloud/proxy-wasm-go-host/abi"
 	"github.com/banzaicloud/proxy-wasm-go-host/api"
-	importsv2 "github.com/banzaicloud/proxy-wasm-go-host/internal/imports"
+	"github.com/banzaicloud/proxy-wasm-go-host/internal/imports"
 )
 
 var (
@@ -247,7 +247,7 @@ func (i *Instance) registerImports() error {
 	var hostFunctions func(api.WasmInstance) map[string]interface{}
 	switch abiName {
 	case abi.ProxyWasmABI_0_2_1, abi.ProxyWasmABI_0_2_0, abi.ProxyWasmABI_0_1_0:
-		hostFunctions = importsv2.HostFunctions
+		hostFunctions = imports.HostFunctions
 	default:
 		return fmt.Errorf("unknown ABI: %s", abiName)
 	}

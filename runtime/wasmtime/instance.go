@@ -27,7 +27,7 @@ import (
 	"k8s.io/klog/v2"
 
 	"github.com/banzaicloud/proxy-wasm-go-host/api"
-	importsv2 "github.com/banzaicloud/proxy-wasm-go-host/internal/imports"
+	"github.com/banzaicloud/proxy-wasm-go-host/internal/imports"
 )
 
 var (
@@ -224,7 +224,7 @@ func (i *Instance) registerImports() error {
 	// collides. They all use the same module name: "env"
 	module := "env"
 
-	hostFunctions := importsv2.HostFunctions
+	hostFunctions := imports.HostFunctions
 	for n, f := range hostFunctions(i) {
 		err := linker.DefineFunc(i.store, module, n, f)
 		if err != nil {
