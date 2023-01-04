@@ -13,8 +13,11 @@ fmt: ## Run go fmt against code
 vet: ## Run go vet against code
 	go vet -tags=$(TAGS) ./...
 
-.PHONY: test
-test: ## Run tests
+%: %-default
+	@true
+
+.PHONY: test-default
+test-default: ## Run tests
 	go test -tags=$(TAGS) ./...
 
 .PHONY: build

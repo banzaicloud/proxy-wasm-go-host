@@ -22,15 +22,9 @@ import (
 	_ "embed"
 	"testing"
 
-	"mosn.io/pkg/log"
-
 	"github.com/banzaicloud/proxy-wasm-go-host/api"
 	"github.com/banzaicloud/proxy-wasm-go-host/runtime/wazero"
 )
-
-func init() {
-	log.DefaultLogger.SetLogLevel(log.ERROR)
-}
 
 func BenchmarkStartABIContext_wazero(b *testing.B) {
 	vm := wazero.NewVM(context.Background())

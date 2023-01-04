@@ -25,17 +25,11 @@ import (
 	"strconv"
 	"testing"
 
-	"mosn.io/pkg/log"
-
 	"github.com/banzaicloud/proxy-wasm-go-host/abi"
 	"github.com/banzaicloud/proxy-wasm-go-host/api"
 	"github.com/banzaicloud/proxy-wasm-go-host/pkg/utils"
 	"github.com/banzaicloud/proxy-wasm-go-host/runtime/wazero"
 )
-
-func init() {
-	log.DefaultLogger.SetLogLevel(log.ERROR)
-}
 
 func TestStartABIContext_wazero(t *testing.T) {
 	t.Parallel()
