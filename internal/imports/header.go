@@ -18,8 +18,6 @@
 package imports
 
 import (
-	"context"
-
 	"github.com/banzaicloud/proxy-wasm-go-host/api"
 	"github.com/banzaicloud/proxy-wasm-go-host/pkg/utils"
 )
@@ -54,7 +52,7 @@ func GetMap(instance api.WasmInstance, mapType api.MapType) api.HeaderMap {
 
 // Headers/Trailers/Metadata Maps
 
-func (h *host) ProxyAddHeaderMapValue(ctx context.Context, mapType int32, keyDataPtr int32, keySize int32, valueDataPtr int32, valueSize int32) int32 {
+func (h *host) ProxyAddHeaderMapValue(mapType int32, keyDataPtr int32, keySize int32, valueDataPtr int32, valueSize int32) int32 {
 	instance := h.Instance
 	headerMap := GetMap(instance, mapType)
 	if headerMap == nil {
@@ -79,7 +77,7 @@ func (h *host) ProxyAddHeaderMapValue(ctx context.Context, mapType int32, keyDat
 	return api.WasmResultOk.Int32()
 }
 
-func (h *host) ProxyGetHeaderMapValue(ctx context.Context, mapType int32, keyDataPtr int32, keySize int32, valueDataPtr int32, valueSize int32) int32 {
+func (h *host) ProxyGetHeaderMapValue(mapType int32, keyDataPtr int32, keySize int32, valueDataPtr int32, valueSize int32) int32 {
 	instance := h.Instance
 	headerMap := GetMap(instance, mapType)
 	if headerMap == nil {
@@ -102,7 +100,7 @@ func (h *host) ProxyGetHeaderMapValue(ctx context.Context, mapType int32, keyDat
 	return copyIntoInstance(instance, value, valueDataPtr, valueSize).Int32()
 }
 
-func (h *host) ProxyGetHeaderMapPairs(ctx context.Context, mapType int32, returnDataPtr int32, returnDataSize int32) int32 {
+func (h *host) ProxyGetHeaderMapPairs(mapType int32, returnDataPtr int32, returnDataSize int32) int32 {
 	instance := h.Instance
 	header := GetMap(instance, mapType)
 	if header == nil {
@@ -162,7 +160,7 @@ func (h *host) ProxyGetHeaderMapPairs(ctx context.Context, mapType int32, return
 	return api.WasmResultOk.Int32()
 }
 
-func (h *host) ProxySetHeaderMapPairs(ctx context.Context, mapType int32, ptr int32, size int32) int32 {
+func (h *host) ProxySetHeaderMapPairs(mapType int32, ptr int32, size int32) int32 {
 	instance := h.Instance
 	headerMap := GetMap(instance, mapType)
 	if headerMap == nil {
@@ -183,7 +181,7 @@ func (h *host) ProxySetHeaderMapPairs(ctx context.Context, mapType int32, ptr in
 	return api.WasmResultOk.Int32()
 }
 
-func (h *host) ProxyReplaceHeaderMapValue(ctx context.Context, mapType int32, keyDataPtr int32, keySize int32, valueDataPtr int32, valueSize int32) int32 {
+func (h *host) ProxyReplaceHeaderMapValue(mapType int32, keyDataPtr int32, keySize int32, valueDataPtr int32, valueSize int32) int32 {
 	instance := h.Instance
 	headerMap := GetMap(instance, mapType)
 	if headerMap == nil {
@@ -211,7 +209,7 @@ func (h *host) ProxyReplaceHeaderMapValue(ctx context.Context, mapType int32, ke
 	return api.WasmResultOk.Int32()
 }
 
-func (h *host) ProxyRemoveHeaderMapValue(ctx context.Context, mapType int32, keyDataPtr int32, keySize int32) int32 {
+func (h *host) ProxyRemoveHeaderMapValue(mapType int32, keyDataPtr int32, keySize int32) int32 {
 	instance := h.Instance
 	headerMap := GetMap(instance, mapType)
 	if headerMap == nil {
@@ -231,7 +229,7 @@ func (h *host) ProxyRemoveHeaderMapValue(ctx context.Context, mapType int32, key
 	return api.WasmResultOk.Int32()
 }
 
-func (h *host) ProxyGetHeaderMapSize(ctx context.Context, mapType int32, sizePtr int32) int32 {
+func (h *host) ProxyGetHeaderMapSize(mapType int32, sizePtr int32) int32 {
 	instance := h.Instance
 	headerMap := GetMap(instance, mapType)
 	if headerMap == nil {

@@ -18,14 +18,12 @@
 package imports
 
 import (
-	"context"
-
 	"github.com/banzaicloud/proxy-wasm-go-host/api"
 )
 
 // Metrics
 
-func (h *host) ProxyDefineMetric(ctx context.Context, metricType int32, namePtr int32, nameSize int32, returnMetricId int32) int32 {
+func (h *host) ProxyDefineMetric(metricType int32, namePtr int32, nameSize int32, returnMetricId int32) int32 {
 	instance := h.Instance
 	ih := getImportHandler(instance)
 
@@ -54,7 +52,7 @@ func (h *host) ProxyDefineMetric(ctx context.Context, metricType int32, namePtr 
 	return api.WasmResultOk.Int32()
 }
 
-func (h *host) ProxyIncrementMetric(ctx context.Context, metricId int32, offset int64) int32 {
+func (h *host) ProxyIncrementMetric(metricId int32, offset int64) int32 {
 	ih := getImportHandler(h.Instance)
 
 	res := ih.IncrementMetric(metricId, offset)
@@ -62,7 +60,7 @@ func (h *host) ProxyIncrementMetric(ctx context.Context, metricId int32, offset 
 	return res.Int32()
 }
 
-func (h *host) ProxyRecordMetric(ctx context.Context, metricId int32, value int64) int32 {
+func (h *host) ProxyRecordMetric(metricId int32, value int64) int32 {
 	ih := getImportHandler(h.Instance)
 
 	res := ih.RecordMetric(metricId, value)
@@ -70,7 +68,7 @@ func (h *host) ProxyRecordMetric(ctx context.Context, metricId int32, value int6
 	return res.Int32()
 }
 
-func (h *host) ProxyGetMetric(ctx context.Context, metricId int32, resultUint64Ptr int32) int32 {
+func (h *host) ProxyGetMetric(metricId int32, resultUint64Ptr int32) int32 {
 	instance := h.Instance
 	ih := getImportHandler(instance)
 

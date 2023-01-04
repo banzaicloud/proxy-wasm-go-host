@@ -18,8 +18,6 @@
 package imports
 
 import (
-	"context"
-
 	"github.com/banzaicloud/proxy-wasm-go-host/api"
 	utils "github.com/banzaicloud/proxy-wasm-go-host/pkg/utils"
 )
@@ -28,7 +26,6 @@ import (
 
 // TODO(@wayne): implement metadata
 func (h *host) ProxyGrpcCall(
-	ctx context.Context,
 	grpcServiceData int32,
 	grpcServiceSize int32,
 	serviceNameData int32,
@@ -81,7 +78,6 @@ func (h *host) ProxyGrpcCall(
 
 // TODO(@wayne): implement metadata, message
 func (h *host) ProxyGrpcStream(
-	ctx context.Context,
 	grpcServiceData int32,
 	grpcServiceSize int32,
 	serviceNameData int32,
@@ -125,7 +121,7 @@ func (h *host) ProxyGrpcStream(
 	return api.WasmResultOk.Int32()
 }
 
-func (h *host) ProxyGrpcSend(ctx context.Context, streamID int32, messagePtr int32, messageSize int32, endOfStream int32) int32 {
+func (h *host) ProxyGrpcSend(streamID int32, messagePtr int32, messageSize int32, endOfStream int32) int32 {
 	instance := h.Instance
 	msg, err := instance.GetMemory(uint64(messagePtr), uint64(messageSize))
 	if err != nil {
@@ -137,14 +133,14 @@ func (h *host) ProxyGrpcSend(ctx context.Context, streamID int32, messagePtr int
 	return ih.SendGrpcCallMsg(streamID, utils.NewIoBufferBytes(msg), endOfStream).Int32()
 }
 
-func (h *host) ProxyGrpcCancel(ctx context.Context, calloutID int32) int32 {
+func (h *host) ProxyGrpcCancel(calloutID int32) int32 {
 	instance := h.Instance
 	ih := getImportHandler(instance)
 
 	return ih.CancelGrpcCall(calloutID).Int32()
 }
 
-func (h *host) ProxyGrpcClose(ctx context.Context, calloutID int32) int32 {
+func (h *host) ProxyGrpcClose(calloutID int32) int32 {
 	instance := h.Instance
 	ih := getImportHandler(instance)
 

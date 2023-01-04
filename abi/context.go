@@ -24,6 +24,7 @@ import (
 )
 
 const ProxyWasmABI_0_1_0 string = "proxy_abi_version_0_1_0"
+const ProxyWasmABI_0_2_0 string = "proxy_abi_version_0_2_0"
 const ProxyWasmABI_0_2_1 string = "proxy_abi_version_0_2_1"
 
 func NewContext(importsHandler api.ImportsHandler, instance api.WasmInstance) api.ABIContext {

@@ -18,14 +18,12 @@
 package imports
 
 import (
-	"context"
-
 	"github.com/banzaicloud/proxy-wasm-go-host/api"
 )
 
 // SharedData
 
-func (h *host) ProxyGetSharedData(ctx context.Context, keyPtr int32, keySize int32, returnValuePtr int32, returnValueSize int32, returnCasPtr int32) int32 {
+func (h *host) ProxyGetSharedData(keyPtr int32, keySize int32, returnValuePtr int32, returnValueSize int32, returnCasPtr int32) int32 {
 	instance := h.Instance
 	key, err := instance.GetMemory(uint64(keyPtr), uint64(keySize))
 	if err != nil {
@@ -55,7 +53,7 @@ func (h *host) ProxyGetSharedData(ctx context.Context, keyPtr int32, keySize int
 	return api.WasmResultOk.Int32()
 }
 
-func (h *host) ProxySetSharedData(ctx context.Context, keyPtr int32, keySize int32, valuePtr int32, valueSize int32, cas int32) int32 {
+func (h *host) ProxySetSharedData(keyPtr int32, keySize int32, valuePtr int32, valueSize int32, cas int32) int32 {
 	instance := h.Instance
 	key, err := instance.GetMemory(uint64(keyPtr), uint64(keySize))
 	if err != nil {
@@ -77,7 +75,7 @@ func (h *host) ProxySetSharedData(ctx context.Context, keyPtr int32, keySize int
 
 // SharedQueue
 
-func (h *host) ProxyRegisterSharedQueue(ctx context.Context, queueNamePtr int32, queueNameSize int32, tokenIDPtr int32) int32 {
+func (h *host) ProxyRegisterSharedQueue(queueNamePtr int32, queueNameSize int32, tokenIDPtr int32) int32 {
 	instance := h.Instance
 	queueName, err := instance.GetMemory(uint64(queueNamePtr), uint64(queueNameSize))
 	if err != nil {
@@ -103,7 +101,7 @@ func (h *host) ProxyRegisterSharedQueue(ctx context.Context, queueNamePtr int32,
 }
 
 // TODO(@wayne): vm context
-func (h *host) ProxyResolveSharedQueue(ctx context.Context, vmIDPtr int32, vmIDSize int32, queueNamePtr int32, queueNameSize int32, tokenIDPtr int32) int32 {
+func (h *host) ProxyResolveSharedQueue(vmIDPtr int32, vmIDSize int32, queueNamePtr int32, queueNameSize int32, tokenIDPtr int32) int32 {
 	instance := h.Instance
 	queueName, err := instance.GetMemory(uint64(queueNamePtr), uint64(queueNameSize))
 	if err != nil {
@@ -128,7 +126,7 @@ func (h *host) ProxyResolveSharedQueue(ctx context.Context, vmIDPtr int32, vmIDS
 	return api.WasmResultOk.Int32()
 }
 
-func (h *host) ProxyEnqueueSharedQueue(ctx context.Context, tokenID int32, dataPtr int32, dataSize int32) int32 {
+func (h *host) ProxyEnqueueSharedQueue(tokenID int32, dataPtr int32, dataSize int32) int32 {
 	instance := h.Instance
 	value, err := instance.GetMemory(uint64(dataPtr), uint64(dataSize))
 	if err != nil {
@@ -140,7 +138,7 @@ func (h *host) ProxyEnqueueSharedQueue(ctx context.Context, tokenID int32, dataP
 	return ih.EnqueueSharedQueue(uint32(tokenID), string(value)).Int32()
 }
 
-func (h *host) ProxyDequeueSharedQueue(ctx context.Context, tokenID int32, returnValuePtr int32, returnValueSize int32) int32 {
+func (h *host) ProxyDequeueSharedQueue(tokenID int32, returnValuePtr int32, returnValueSize int32) int32 {
 	instance := h.Instance
 	ih := getImportHandler(instance)
 

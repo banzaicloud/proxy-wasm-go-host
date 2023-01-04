@@ -18,14 +18,11 @@
 package imports
 
 import (
-	"context"
-
 	"github.com/banzaicloud/proxy-wasm-go-host/api"
 	"github.com/banzaicloud/proxy-wasm-go-host/pkg/utils"
 )
 
 func (h *host) ProxyHttpCall(
-	ctx context.Context,
 	uriPtr int32,
 	uriSize int32,
 	headerPairsPtr int32,

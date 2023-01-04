@@ -19,7 +19,6 @@
 package wasmer
 
 import (
-	"context"
 	"reflect"
 	"testing"
 	"time"
@@ -28,8 +27,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	wasmerGo "github.com/wasmerio/wasmer-go/wasmer"
-
-	"github.com/banzaicloud/proxy-wasm-go-host/api"
 )
 
 func Test_registerFunc(t *testing.T) {
@@ -66,10 +63,7 @@ func Test_registerFunc(t *testing.T) {
 	// f is not func
 	assert.Equal(t, ins.registerFunc("TestRegisterFuncNamespace", "funcName", &testStruct), ErrRegisterNotFunc)
 
-	// f is func with 0 args
-	assert.Equal(t, ins.registerFunc("TestRegisterFuncNamespace", "funcName", func() {}), ErrRegisterArgNum)
-
-	assert.Nil(t, ins.registerFunc("TestRegisterFuncNamespace", "funcName", func(context.Context) {}))
+	assert.Nil(t, ins.registerFunc("TestRegisterFuncNamespace", "funcName", func() {}))
 
 	assert.Nil(t, ins.Start())
 }
@@ -98,7 +92,7 @@ func Test_registerFuncRecoverPanic(t *testing.T) {
 
 	defer ins.Stop()
 
-	assert.Nil(t, ins.registerFunc("TestRegisterFuncRecover", "somePanic", func(context.Context) int32 {
+	assert.Nil(t, ins.registerFunc("TestRegisterFuncRecover", "somePanic", func() int32 {
 		panic("some panic")
 	}))
 
@@ -134,7 +128,7 @@ func TestInstanceMalloc(t *testing.T) {
 
 	defer ins.Stop()
 
-	assert.Nil(t, ins.registerFunc("TestRegisterFuncRecover", "somePanic", func(instance api.WasmInstance) int32 {
+	assert.Nil(t, ins.registerFunc("TestRegisterFuncRecover", "somePanic", func() int32 {
 		panic("some panic")
 	}))
 

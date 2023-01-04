@@ -19,7 +19,6 @@
 package wasmer
 
 import (
-	"context"
 	"encoding/binary"
 	"fmt"
 	"reflect"
@@ -42,7 +41,6 @@ var (
 	ErrInstanceAlreadyStart   = errors.New("instance has already started")
 	ErrInvalidParam           = errors.New("invalid param")
 	ErrRegisterNotFunc        = errors.New("register a non-func object")
-	ErrRegisterArgNum         = errors.New("register func with invalid arg num")
 	ErrRegisterArgType        = errors.New("register func with invalid arg type")
 	ErrInvalidReturnAddress   = errors.New("invalid return address")
 	ErrMallocFunctionNotFound = errors.New("could not find memory allocate function")
@@ -248,7 +246,7 @@ func (i *Instance) registerImports() error {
 
 	var hostFunctions func(api.WasmInstance) map[string]interface{}
 	switch abiName {
-	case abi.ProxyWasmABI_0_2_1, abi.ProxyWasmABI_0_1_0:
+	case abi.ProxyWasmABI_0_2_1, abi.ProxyWasmABI_0_2_0, abi.ProxyWasmABI_0_1_0:
 		hostFunctions = importsv2.HostFunctions
 	default:
 		return fmt.Errorf("unknown ABI: %s", abiName)
@@ -279,13 +277,10 @@ func (i *Instance) registerFunc(namespace string, funcName string, f interface{}
 	funcType := reflect.TypeOf(f)
 
 	argsNum := funcType.NumIn()
-	if argsNum < 1 {
-		return ErrRegisterArgNum
-	}
 
-	argsKind := make([]*wasmerGo.ValueType, argsNum-1)
-	for i := 1; i < argsNum; i++ {
-		argsKind[i-1] = convertFromGoType(funcType.In(i))
+	argsKind := make([]*wasmerGo.ValueType, argsNum)
+	for i := 0; i < argsNum; i++ {
+		argsKind[i] = convertFromGoType(funcType.In(i))
 	}
 
 	retsNum := funcType.NumOut()
@@ -305,13 +300,10 @@ func (i *Instance) registerFunc(namespace string, funcName string, f interface{}
 				}
 			}()
 
-			callArgs := make([]reflect.Value, 1+len(args))
-
-			// wasmer cannot propagate context at the moment, so substitute with context.Background
-			callArgs[0] = reflect.ValueOf(context.Background())
+			callArgs := make([]reflect.Value, len(args))
 
 			for i, arg := range args {
-				callArgs[i+1] = convertToGoTypes(arg)
+				callArgs[i] = convertToGoTypes(arg)
 			}
 
 			callResult := reflect.ValueOf(f).Call(callArgs)

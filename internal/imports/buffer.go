@@ -18,8 +18,6 @@
 package imports
 
 import (
-	"context"
-
 	"github.com/banzaicloud/proxy-wasm-go-host/api"
 )
 
@@ -50,7 +48,7 @@ func GetBuffer(instance api.WasmInstance, bufferType api.BufferType) api.IoBuffe
 	return nil
 }
 
-func (h *host) ProxyGetBufferBytes(ctx context.Context, bufferType int32, start int32, length int32, returnDataPtr int32, returnDataSize int32) int32 {
+func (h *host) ProxyGetBufferBytes(bufferType int32, start int32, length int32, returnDataPtr int32, returnDataSize int32) int32 {
 	if api.BufferType(bufferType) > api.BufferTypeMax {
 		return api.WasmResultBadArgument.Int32()
 	}
@@ -92,7 +90,7 @@ func (h *host) ProxyGetBufferBytes(ctx context.Context, bufferType int32, start 
 	return api.WasmResultOk.Int32()
 }
 
-func (h *host) ProxySetBufferBytes(ctx context.Context, bufferType int32, start int32, length int32, dataPtr int32, dataSize int32) int32 {
+func (h *host) ProxySetBufferBytes(bufferType int32, start int32, length int32, dataPtr int32, dataSize int32) int32 {
 	if api.BufferType(bufferType) > api.BufferTypeMax {
 		return api.WasmResultBadArgument.Int32()
 	}
@@ -128,7 +126,7 @@ func (h *host) ProxySetBufferBytes(ctx context.Context, bufferType int32, start 
 	return api.WasmResultOk.Int32()
 }
 
-func (h *host) ProxyGetBufferStatus(ctx context.Context, bufferType int32, lengthPtr int32, flagsPtr int32) int32 {
+func (h *host) ProxyGetBufferStatus(bufferType int32, lengthPtr int32, flagsPtr int32) int32 {
 	if api.BufferType(bufferType) > api.BufferTypeMax {
 		return api.WasmResultBadArgument.Int32()
 	}

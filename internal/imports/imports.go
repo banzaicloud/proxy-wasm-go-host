@@ -18,8 +18,6 @@
 package imports
 
 import (
-	"context"
-
 	"github.com/banzaicloud/proxy-wasm-go-host/api"
 	"github.com/banzaicloud/proxy-wasm-go-host/pkg/utils"
 )
@@ -78,7 +76,7 @@ func HostFunctions(instance api.WasmInstance) map[string]interface{} {
 
 // Logging
 
-func (h *host) ProxyLog(ctx context.Context, logLevel int32, messagePtr int32, messageSize int32) int32 {
+func (h *host) ProxyLog(logLevel int32, messagePtr int32, messageSize int32) int32 {
 	instance := h.Instance
 	ih := getImportHandler(h.Instance)
 
@@ -90,7 +88,7 @@ func (h *host) ProxyLog(ctx context.Context, logLevel int32, messagePtr int32, m
 	return ih.Log(api.LogLevel(logLevel), string(logContent)).Int32()
 }
 
-func (h *host) ProxyGetLogLevel(ctx context.Context, logLevelPtr int32) int32 {
+func (h *host) ProxyGetLogLevel(logLevelPtr int32) int32 {
 	instance := h.Instance
 	ih := getImportHandler(h.Instance)
 
@@ -102,7 +100,7 @@ func (h *host) ProxyGetLogLevel(ctx context.Context, logLevelPtr int32) int32 {
 }
 
 // Results status details for any previous ABI call and onGrpcClose.
-func (h *host) ProxyGetStatus(ctx context.Context, statusCodePtr int32, returnStatusDetailPtr int32, returnStatusDetailSize int32) int32 {
+func (h *host) ProxyGetStatus(statusCodePtr int32, returnStatusDetailPtr int32, returnStatusDetailSize int32) int32 {
 	instance := h.Instance
 	ih := getImportHandler(h.Instance)
 
@@ -120,7 +118,7 @@ func (h *host) ProxyGetStatus(ctx context.Context, statusCodePtr int32, returnSt
 
 // Timer (will be set for the root context, e.g. onStart, onTick).
 
-func (h *host) ProxySetTickPeriodMilliseconds(ctx context.Context, tickPeriodMilliseconds int32) int32 {
+func (h *host) ProxySetTickPeriodMilliseconds(tickPeriodMilliseconds int32) int32 {
 	ih := getImportHandler(h.Instance)
 
 	return ih.SetTickPeriodMilliseconds(tickPeriodMilliseconds).Int32()
@@ -128,7 +126,7 @@ func (h *host) ProxySetTickPeriodMilliseconds(ctx context.Context, tickPeriodMil
 
 // Time
 
-func (h *host) ProxyGetCurrentTimeNanoseconds(ctx context.Context, resultUint64Ptr int32) int32 {
+func (h *host) ProxyGetCurrentTimeNanoseconds(resultUint64Ptr int32) int32 {
 	instance := h.Instance
 	ih := getImportHandler(instance)
 
@@ -146,19 +144,19 @@ func (h *host) ProxyGetCurrentTimeNanoseconds(ctx context.Context, resultUint64P
 
 // System
 
-func (h *host) ProxySetEffectiveContext(ctx context.Context, contextID int32) int32 {
+func (h *host) ProxySetEffectiveContext(contextID int32) int32 {
 	ih := getImportHandler(h.Instance)
 
 	return ih.SetEffectiveContextID(contextID).Int32()
 }
 
-func (h *host) ProxyDone(ctx context.Context) int32 {
+func (h *host) ProxyDone() int32 {
 	ih := getImportHandler(h.Instance)
 
 	return ih.Done().Int32()
 }
 
-func (h *host) ProxyCallForeignFunction(ctx context.Context, funcNamePtr int32, funcNameSize int32,
+func (h *host) ProxyCallForeignFunction(funcNamePtr int32, funcNameSize int32,
 	paramPtr int32, paramSize int32, returnData int32, returnSize int32,
 ) int32 {
 	instance := h.Instance
@@ -184,7 +182,7 @@ func (h *host) ProxyCallForeignFunction(ctx context.Context, funcNamePtr int32, 
 
 // State accessors
 
-func (h *host) ProxyGetProperty(ctx context.Context, keyPtr int32, keySize int32, returnValuePtr int32, returnValueSize int32) int32 {
+func (h *host) ProxyGetProperty(keyPtr int32, keySize int32, returnValuePtr int32, returnValueSize int32) int32 {
 	instance := h.Instance
 	key, err := instance.GetMemory(uint64(keyPtr), uint64(keySize))
 	if err != nil {
@@ -204,7 +202,7 @@ func (h *host) ProxyGetProperty(ctx context.Context, keyPtr int32, keySize int32
 	return copyIntoInstance(instance, value, returnValuePtr, returnValueSize).Int32()
 }
 
-func (h *host) ProxySetProperty(ctx context.Context, keyPtr int32, keySize int32, valuePtr int32, valueSize int32) int32 {
+func (h *host) ProxySetProperty(keyPtr int32, keySize int32, valuePtr int32, valueSize int32) int32 {
 	instance := h.Instance
 	key, err := instance.GetMemory(uint64(keyPtr), uint64(keySize))
 	if err != nil {
@@ -226,7 +224,7 @@ func (h *host) ProxySetProperty(ctx context.Context, keyPtr int32, keySize int32
 
 // Continue/Close/Reply
 
-func (h *host) ProxyContinueStream(ctx context.Context, streamType int32) int32 {
+func (h *host) ProxyContinueStream(streamType int32) int32 {
 	ih := getImportHandler(h.Instance)
 
 	switch api.StreamType(streamType) {
@@ -261,7 +259,6 @@ func (h *host) ProxyCloseStream(streamType int32) int32 {
 }
 
 func (h *host) ProxySendLocalResponse(
-	ctx context.Context,
 	statusCode int32,
 	statusCodeDetailsPtr int32,
 	statusCodeDetailsSize int32,
