@@ -362,11 +362,11 @@ func (i *Instance) GetExportsMem(memName string) ([]byte, error) {
 
 	mem := i.instance.ExportedMemory(memName)
 
-	return i.GetMemory(0, uint64(mem.Size(i.ctx)))
+	return i.GetMemory(0, uint64(mem.Size()))
 }
 
 func (i *Instance) GetMemory(addr uint64, size uint64) ([]byte, error) {
-	if ret, ok := i.instance.Memory().Read(i.ctx, uint32(addr), uint32(size)); !ok {
+	if ret, ok := i.instance.Memory().Read(uint32(addr), uint32(size)); !ok {
 		return nil, ErrUnableToReadMemory
 	} else {
 		return ret, nil
@@ -378,7 +378,7 @@ func (i *Instance) PutMemory(addr uint64, size uint64, content []byte) error {
 		size = uint64(n)
 	}
 
-	if ok := i.instance.Memory().Write(i.ctx, uint32(addr), content[:size]); !ok {
+	if ok := i.instance.Memory().Write(uint32(addr), content[:size]); !ok {
 		return ErrOutOfMemory
 	}
 
@@ -386,7 +386,7 @@ func (i *Instance) PutMemory(addr uint64, size uint64, content []byte) error {
 }
 
 func (i *Instance) GetByte(addr uint64) (byte, error) {
-	if b, ok := i.instance.Memory().ReadByte(i.ctx, uint32(addr)); !ok {
+	if b, ok := i.instance.Memory().ReadByte(uint32(addr)); !ok {
 		return b, ErrOutOfMemory
 	} else {
 		return b, nil
@@ -394,7 +394,7 @@ func (i *Instance) GetByte(addr uint64) (byte, error) {
 }
 
 func (i *Instance) PutByte(addr uint64, b byte) error {
-	if ok := i.instance.Memory().WriteByte(i.ctx, uint32(addr), b); !ok {
+	if ok := i.instance.Memory().WriteByte(uint32(addr), b); !ok {
 		return ErrOutOfMemory
 	}
 
@@ -402,7 +402,7 @@ func (i *Instance) PutByte(addr uint64, b byte) error {
 }
 
 func (i *Instance) GetUint32(addr uint64) (uint32, error) {
-	if n, ok := i.instance.Memory().ReadUint32Le(i.ctx, uint32(addr)); !ok {
+	if n, ok := i.instance.Memory().ReadUint32Le(uint32(addr)); !ok {
 		return n, ErrOutOfMemory
 	} else {
 		return n, nil
@@ -410,7 +410,7 @@ func (i *Instance) GetUint32(addr uint64) (uint32, error) {
 }
 
 func (i *Instance) PutUint32(addr uint64, value uint32) error {
-	if ok := i.instance.Memory().WriteUint32Le(i.ctx, uint32(addr), value); !ok {
+	if ok := i.instance.Memory().WriteUint32Le(uint32(addr), value); !ok {
 		return ErrOutOfMemory
 	}
 
