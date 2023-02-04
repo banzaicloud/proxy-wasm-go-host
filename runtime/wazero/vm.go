@@ -26,9 +26,9 @@ import (
 )
 
 type VM struct {
-	runtime wazero.Runtime
-	ctx     context.Context
-	logger  logr.Logger
+	cache  wazero.CompilationCache
+	ctx    context.Context
+	logger logr.Logger
 }
 
 func VMWithLogger(logger logr.Logger) VMOptions {
@@ -41,8 +41,8 @@ type VMOptions func(vm *VM)
 
 func NewVM(ctx context.Context, options ...VMOptions) api.WasmVM {
 	vm := &VM{
-		runtime: wazero.NewRuntime(ctx),
-		ctx:     ctx,
+		cache: wazero.NewCompilationCache(),
+		ctx:   ctx,
 	}
 
 	for _, option := range options {
@@ -67,18 +67,20 @@ func (w *VM) NewModule(wasmBytes []byte) (api.WasmModule, error) {
 		return nil, errors.New("wasm was empty")
 	}
 
-	m, err := w.runtime.CompileModule(w.ctx, wasmBytes)
+	runtime := wazero.NewRuntimeWithConfig(w.ctx, wazero.NewRuntimeConfig().WithCompilationCache(w.cache))
+	m, err := runtime.CompileModule(w.ctx, wasmBytes)
 	if err != nil {
 		return nil, errors.WrapIf(err, "could not compile module")
 	}
 
-	return NewModule(w.ctx, w, m, wasmBytes, ModuleWithLogger(w.logger)), nil
+	return NewModule(w.ctx, w, m, runtime, wasmBytes, ModuleWithLogger(w.logger)), nil
 }
 
 // Close implements io.Closer
 func (w *VM) Close() (err error) {
-	if r := w.runtime; r != nil {
-		err = r.Close(w.ctx)
+	if c := w.cache; c != nil {
+		err = c.Close(w.ctx)
 	}
+
 	return
 }

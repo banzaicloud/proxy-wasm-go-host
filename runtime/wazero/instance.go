@@ -46,8 +46,7 @@ type Instance struct {
 	vm     *VM
 	module *Module
 
-	namespace wazero.Namespace
-	instance  api.Module
+	instance api.Module
 
 	lock     sync.Mutex
 	started  uint32
@@ -85,11 +84,10 @@ func InstanceWithLogger(logger logr.Logger) InstanceOptions {
 func NewInstance(ctx context.Context, vm *VM, module *Module, options ...InstanceOptions) *Instance {
 	// Here, we initialize an empty namespace as imports are defined prior to start.
 	ins := &Instance{
-		ctx:       ctx,
-		vm:        vm,
-		module:    module,
-		namespace: vm.runtime.NewNamespace(ctx),
-		lock:      sync.Mutex{},
+		ctx:    ctx,
+		vm:     vm,
+		module: module,
+		lock:   sync.Mutex{},
 
 		startFunctionNames:  []string{"_start", "_initialize"},
 		mallocFunctionNames: []string{"proxy_on_memory_allocate", "malloc"},
@@ -164,19 +162,26 @@ func (i *Instance) Start() error {
 	}
 
 	ctx := context.Background()
-	r := i.vm.runtime
-	ns := i.namespace
+	r := i.module.runtime
 
-	if _, err := wasi_snapshot_preview1.NewBuilder(r).Instantiate(ctx, ns); err != nil {
-		ns.Close(ctx)
+	if _, err := wasi_snapshot_preview1.NewBuilder(r).Instantiate(ctx); err != nil {
+		if err := i.module.Close(ctx); err != nil {
+			i.logger.Error(err, "could not close wazero module")
+		}
+
 		i.logger.Error(err, "could not instantiate wasi_snapshot_preview1")
+
 		return err
 	}
 
-	ins, err := ns.InstantiateModule(ctx, i.module.module, wazero.NewModuleConfig())
+	ins, err := r.InstantiateModule(ctx, i.module.module, wazero.NewModuleConfig())
 	if err != nil {
-		ns.Close(ctx)
+		if err := i.module.Close(ctx); err != nil {
+			i.logger.Error(err, "could not close wazero module")
+		}
+
 		i.logger.Error(err, "could not instantiate module")
+
 		return err
 	}
 
@@ -210,8 +215,10 @@ func (i *Instance) Stop() {
 		atomic.CompareAndSwapUint32(&i.started, 1, 0)
 		i.lock.Unlock()
 
-		if ns := i.namespace; ns != nil {
-			ns.Close(i.ctx)
+		if m := i.module; m != nil {
+			if err := i.module.Close(i.ctx); err != nil {
+				i.logger.Error(err, "could not close wazero module")
+			}
 		}
 	}()
 }
@@ -226,8 +233,7 @@ func (i *Instance) registerImports() error {
 		return ErrInstanceAlreadyStart
 	}
 
-	r := i.vm.runtime
-	ns := i.namespace
+	r := i.module.runtime
 
 	// proxy-wasm cannot run multiple ABI in the same instance because the ABI
 	// collides. They all use the same module name: "env"
@@ -245,9 +251,13 @@ func (i *Instance) registerImports() error {
 	if abiName == abi.ProxyWasmABI_0_1_0 {
 		wasiBuilder := r.NewHostModuleBuilder("wasi_unstable")
 		wasi_snapshot_preview1.NewFunctionExporter().ExportFunctions(wasiBuilder)
-		if _, err := wasiBuilder.Instantiate(i.ctx, ns); err != nil {
-			ns.Close(i.ctx)
+		if _, err := wasiBuilder.Instantiate(i.ctx); err != nil {
+			if err := i.module.Close(i.ctx); err != nil {
+				i.logger.Error(err, "could not close wazero module")
+			}
+
 			i.logger.Error(err, "could not instantiate wasi_unstable")
+
 			return err
 		}
 	}
@@ -258,8 +268,13 @@ func (i *Instance) registerImports() error {
 		b.NewFunctionBuilder().WithFunc(f).Export(n)
 	}
 
-	if _, err := b.Instantiate(i.ctx, ns); err != nil {
+	if _, err := b.Instantiate(i.ctx); err != nil {
+		if err := i.module.Close(i.ctx); err != nil {
+			i.logger.Error(err, "could not close wazero module")
+		}
+
 		i.logger.Error(err, "could not instantiate module")
+
 		return err
 	}
 

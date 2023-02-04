@@ -26,11 +26,12 @@ import (
 )
 
 type Module struct {
-	vm       *VM
-	module   wazero.CompiledModule
-	rawBytes []byte
-	ctx      context.Context
-	logger   logr.Logger
+	vm        *VM
+	module    wazero.CompiledModule
+	runtime   wazero.Runtime
+	wasmBytes []byte
+	ctx       context.Context
+	logger    logr.Logger
 }
 
 func ModuleWithLogger(logger logr.Logger) ModuleOptions {
@@ -41,12 +42,14 @@ func ModuleWithLogger(logger logr.Logger) ModuleOptions {
 
 type ModuleOptions func(module *Module)
 
-func NewModule(ctx context.Context, vm *VM, module wazero.CompiledModule, wasmBytes []byte, options ...ModuleOptions) *Module {
+func NewModule(ctx context.Context, vm *VM, module wazero.CompiledModule, runtime wazero.Runtime, wasmBytes []byte, options ...ModuleOptions) *Module {
 	m := &Module{
-		vm:       vm,
-		module:   module,
-		rawBytes: wasmBytes,
-		ctx:      ctx,
+		vm:        vm,
+		ctx:       ctx,
+		wasmBytes: wasmBytes,
+
+		module:  module,
+		runtime: runtime,
 	}
 
 	for _, option := range options {
@@ -63,7 +66,16 @@ func NewModule(ctx context.Context, vm *VM, module wazero.CompiledModule, wasmBy
 func (m *Module) Init() {}
 
 func (m *Module) NewInstance() (api.WasmInstance, error) {
-	return NewInstance(m.ctx, m.vm, m, InstanceWithLogger(m.logger)), nil
+	mod, err := m.vm.NewModule(m.wasmBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewInstance(m.ctx, m.vm, mod.(*Module), InstanceWithLogger(m.logger)), nil
+}
+
+func (m *Module) Close(ctx context.Context) error {
+	return m.runtime.Close(ctx)
 }
 
 func (m *Module) GetABINameList() []string {
