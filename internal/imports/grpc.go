@@ -15,8 +15,9 @@
 package imports
 
 import (
+	"bytes"
+
 	"github.com/banzaicloud/proxy-wasm-go-host/api"
-	utils "github.com/banzaicloud/proxy-wasm-go-host/pkg/utils"
 )
 
 // gRPC
@@ -60,7 +61,7 @@ func (h *host) ProxyGrpcCall(
 	ih := getImportHandler(instance)
 
 	calloutID, res := ih.GrpcCall(string(grpcService), string(serviceName), string(method),
-		utils.NewIoBufferBytes(msg), timeoutMilliseconds)
+		bytes.NewBuffer(msg), timeoutMilliseconds)
 	if res != api.WasmResultOk {
 		return res.Int32()
 	}
@@ -125,7 +126,7 @@ func (h *host) ProxyGrpcSend(streamID int32, messagePtr int32, messageSize int32
 
 	ih := getImportHandler(instance)
 
-	return ih.SendGrpcCallMsg(streamID, utils.NewIoBufferBytes(msg), endOfStream).Int32()
+	return ih.SendGrpcCallMsg(streamID, bytes.NewBuffer(msg), endOfStream).Int32()
 }
 
 func (h *host) ProxyGrpcCancel(calloutID int32) int32 {

@@ -15,6 +15,8 @@
 package imports
 
 import (
+	"bytes"
+
 	"github.com/banzaicloud/proxy-wasm-go-host/api"
 	"github.com/banzaicloud/proxy-wasm-go-host/pkg/utils"
 )
@@ -286,7 +288,7 @@ func (h *host) ProxySendLocalResponse(
 	ih := getImportHandler(instance)
 
 	return ih.SendHttpResp(statusCode,
-		utils.NewIoBufferBytes(statusCodeDetail),
-		utils.NewIoBufferBytes(respBody),
+		bytes.NewBuffer(statusCodeDetail),
+		bytes.NewBuffer(respBody),
 		utils.CommonHeader(additionalHeaderMap), grpcStatus).Int32()
 }

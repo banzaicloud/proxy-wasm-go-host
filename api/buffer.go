@@ -24,12 +24,24 @@ type IoBuffer interface {
 	// Note: do not change content in return bytes, use write instead
 	Bytes() []byte
 
+	// Read reads the next len(p) bytes from the buffer or until the buffer
+	// is drained. The return value n is the number of bytes read. If the
+	// buffer has no data to return, err is io.EOF (unless len(p) is zero);
+	// otherwise it is nil.
+	Read(p []byte) (n int, err error)
+
 	// Write appends the contents of p to the buffer, growing the buffer as
 	// needed. The return value n is the length of p; err is always nil. If the
 	// buffer becomes too large, Write will panic with ErrTooLarge.
 	Write(p []byte) (n int, err error)
 
-	// Drain drains a offset length of bytes in buffer.
-	// It can be used with Bytes(), after consuming a fixed-length of data
-	Drain(offset int)
+	// Truncate discards all but the first n unread bytes from the buffer
+	// but continues to use the same allocated storage.
+	// It panics if n is negative or greater than the length of the buffer.
+	Truncate(n int)
+
+	// Reset resets the buffer to be empty,
+	// but it retains the underlying storage for use by future writes.
+	// Reset is the same as Truncate(0).
+	Reset()
 }

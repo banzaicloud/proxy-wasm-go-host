@@ -108,7 +108,7 @@ func (h *host) ProxySetBufferBytes(bufferType int32, start int32, length int32, 
 		if length == 0 { // prepend
 			content = append(content, buf.Bytes()...)
 		}
-		buf.Drain(buf.Len())
+		buf.Reset()
 		_, err = buf.Write(content)
 	case int(start) >= buf.Len(): // append
 		_, err = buf.Write(content)

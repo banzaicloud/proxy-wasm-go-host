@@ -15,6 +15,8 @@
 package imports
 
 import (
+	"bytes"
+
 	"github.com/banzaicloud/proxy-wasm-go-host/api"
 	"github.com/banzaicloud/proxy-wasm-go-host/pkg/utils"
 )
@@ -59,7 +61,7 @@ func (h *host) ProxyHttpCall(
 	calloutID, res := ih.HttpCall(
 		string(url),
 		utils.CommonHeader(headerMap),
-		utils.NewIoBufferBytes(body),
+		bytes.NewBuffer(body),
 		utils.CommonHeader(trailerMap),
 		timeoutMilliseconds,
 	)
