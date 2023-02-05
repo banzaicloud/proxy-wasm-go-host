@@ -6,7 +6,7 @@ replace github.com/banzaicloud/proxy-wasm-go-host => ../..
 
 require (
 	emperror.dev/errors v0.8.1
-	github.com/banzaicloud/proxy-wasm-go-host v0.0.0-00010101000000-000000000000
+	github.com/banzaicloud/proxy-wasm-go-host v1.0.1
 	github.com/go-logr/logr v1.2.3
 	github.com/golang/mock v1.6.0
 	github.com/stretchr/testify v1.8.1

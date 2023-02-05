@@ -22,7 +22,7 @@ import (
 	_ "embed"
 	"testing"
 
-	"github.com/banzaicloud/proxy-wasm-go-host/runtime/wasmtime"
+	"github.com/banzaicloud/proxy-wasm-go-host/runtime/wasmtime/v3"
 )
 
 func TestStartABIContextV1_wasmtime(t *testing.T) {

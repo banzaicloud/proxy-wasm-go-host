@@ -21,7 +21,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/banzaicloud/proxy-wasm-go-host/runtime/wasmtime"
+	"github.com/banzaicloud/proxy-wasm-go-host/runtime/wasmtime/v3"
 )
 
 func BenchmarkStartABIContext_wastime(b *testing.B) {
