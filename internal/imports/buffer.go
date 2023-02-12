@@ -15,6 +15,8 @@
 package imports
 
 import (
+	"bytes"
+
 	"github.com/banzaicloud/proxy-wasm-go-host/api"
 )
 
@@ -106,7 +108,10 @@ func (h *host) ProxySetBufferBytes(bufferType int32, start int32, length int32, 
 	switch {
 	case start == 0:
 		if length == 0 { // prepend
-			content = append(content, buf.Bytes()...)
+			tb := new(bytes.Buffer)
+			_, _ = tb.Write(content)
+			_, _ = tb.Write(buf.Bytes())
+			content = tb.Bytes()
 		}
 		buf.Reset()
 		_, err = buf.Write(content)
