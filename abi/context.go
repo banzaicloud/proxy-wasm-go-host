@@ -75,65 +75,32 @@ func NewContext(importsHandler api.ImportsHandler, instance api.WasmInstance) (a
 		return nil, err
 	}
 
-	proxyOnHttpCallResponse, err := instance.GetExportsFunc("proxy_on_http_call_response")
-	if err != nil {
-		return nil, err
-	}
-
 	proxyOnQueueReady, err := instance.GetExportsFunc("proxy_on_queue_ready")
 	if err != nil {
 		return nil, err
 	}
 
-	proxyOnGrpcClose, err := instance.GetExportsFunc("proxy_on_grpc_close")
-	if err != nil {
-		return nil, err
-	}
+	proxyOnGrpcClose, _ := instance.GetExportsFunc("proxy_on_grpc_close")
 
-	proxyOnGrpcReceiveInitialMetadata, err := instance.GetExportsFunc("proxy_on_grpc_receive_initial_metadata")
-	if err != nil {
-		return nil, err
-	}
+	proxyOnGrpcReceiveInitialMetadata, _ := instance.GetExportsFunc("proxy_on_grpc_receive_initial_metadata")
 
-	proxyOnGrpcReceiveTrailingMetadata, err := instance.GetExportsFunc("proxy_on_grpc_receive_trailing_metadata")
-	if err != nil {
-		return nil, err
-	}
+	proxyOnGrpcReceiveTrailingMetadata, _ := instance.GetExportsFunc("proxy_on_grpc_receive_trailing_metadata")
 
-	proxyOnGrpcReceive, err := instance.GetExportsFunc("proxy_on_grpc_receive")
-	if err != nil {
-		return nil, err
-	}
+	proxyOnGrpcReceive, _ := instance.GetExportsFunc("proxy_on_grpc_receive")
 
-	proxyOnRequestBody, err := instance.GetExportsFunc("proxy_on_request_body")
-	if err != nil {
-		return nil, err
-	}
+	proxyOnRequestBody, _ := instance.GetExportsFunc("proxy_on_request_body")
 
-	proxyOnRequestHeaders, err := instance.GetExportsFunc("proxy_on_request_headers")
-	if err != nil {
-		return nil, err
-	}
+	proxyOnRequestHeaders, _ := instance.GetExportsFunc("proxy_on_request_headers")
 
-	proxyOnRequestTrailers, err := instance.GetExportsFunc("proxy_on_request_trailers")
-	if err != nil {
-		return nil, err
-	}
+	proxyOnRequestTrailers, _ := instance.GetExportsFunc("proxy_on_request_trailers")
 
-	proxyOnResponseBody, err := instance.GetExportsFunc("proxy_on_response_body")
-	if err != nil {
-		return nil, err
-	}
+	proxyOnResponseBody, _ := instance.GetExportsFunc("proxy_on_response_body")
 
-	proxyOnResponseHeaders, err := instance.GetExportsFunc("proxy_on_response_headers")
-	if err != nil {
-		return nil, err
-	}
+	proxyOnResponseHeaders, _ := instance.GetExportsFunc("proxy_on_response_headers")
 
-	proxyOnResponseTrailers, err := instance.GetExportsFunc("proxy_on_response_trailers")
-	if err != nil {
-		return nil, err
-	}
+	proxyOnResponseTrailers, _ := instance.GetExportsFunc("proxy_on_response_trailers")
+
+	proxyOnHttpCallResponse, _ := instance.GetExportsFunc("proxy_on_http_call_response")
 
 	return &context{
 		imports:                            importsHandler,
