@@ -47,6 +47,7 @@ type Instance struct {
 	module *Module
 
 	instance api.Module
+	malloc   pwapi.WasmFunction
 
 	lock     sync.Mutex
 	started  uint32
@@ -203,6 +204,23 @@ func (i *Instance) Start() error {
 		return nil
 	}
 
+	var f api.Function
+	mallocFuncNames := i.mallocFunctionNames
+	for _, fn := range mallocFuncNames {
+		if f == nil {
+			f = i.instance.ExportedFunction(fn)
+		}
+		if f != nil {
+			break
+		}
+	}
+
+	if f == nil {
+		return ErrMallocFunctionNotFound
+	}
+
+	i.malloc = i.GetWasmFunction(f)
+
 	return errors.NewWithDetails("could not start instance: start function is not exported", "functions", i.startFunctionNames)
 }
 
@@ -286,22 +304,7 @@ func (i *Instance) Malloc(size int32) (uint64, error) {
 		return 0, ErrInstanceNotStart
 	}
 
-	var f api.Function
-	mallocFuncNames := i.mallocFunctionNames
-	for _, fn := range mallocFuncNames {
-		if f == nil {
-			f = i.instance.ExportedFunction(fn)
-		}
-		if f != nil {
-			break
-		}
-	}
-
-	if f == nil {
-		return 0, ErrMallocFunctionNotFound
-	}
-
-	addr, err := i.GetWasmFunction(f).Call(size)
+	addr, err := i.malloc.Call(size)
 	if err != nil {
 		i.HandleError(err)
 		return 0, err

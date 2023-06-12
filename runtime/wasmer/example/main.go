@@ -160,7 +160,10 @@ func getWasmContext() api.ABIContext {
 		}
 
 		// create ABI context
-		wasmCtx = abi.NewContext(&abi.DefaultImportsHandler{}, instance)
+		wasmCtx, err = abi.NewContext(&abi.DefaultImportsHandler{}, instance)
+		if err != nil {
+			log.Panicln(err)
+		}
 
 		// start the wasm vm instance
 		if err = instance.Start(); err != nil {
