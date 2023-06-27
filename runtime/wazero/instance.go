@@ -36,7 +36,7 @@ var (
 	ErrInstanceAlreadyStart   = errors.New("instance has already started")
 	ErrOutOfMemory            = errors.New("out of memory")
 	ErrUnableToReadMemory     = errors.New("unable to read memory")
-	ErrUnknownFunc            = errors.New("unknown func")
+	ErrFuncNotExported        = errors.New("function is not exported")
 	ErrInvalidReturnAddress   = errors.New("invalid return address")
 	ErrMallocFunctionNotFound = errors.New("could not find memory allocate function")
 )
@@ -46,8 +46,9 @@ type Instance struct {
 	vm     *VM
 	module *Module
 
-	instance api.Module
-	malloc   pwapi.WasmFunction
+	instance  api.Module
+	malloc    pwapi.WasmFunction
+	funcCache sync.Map
 
 	lock     sync.Mutex
 	started  uint32
@@ -188,35 +189,25 @@ func (i *Instance) Start() error {
 
 	i.instance = ins
 
-	var f api.Function
 	mallocFuncNames := i.mallocFunctionNames
 	for _, fn := range mallocFuncNames {
-		if f == nil {
-			f = i.instance.ExportedFunction(fn)
-		}
-		if f != nil {
+		if f, err := i.getExportsFunc(fn); err == nil {
+			i.malloc = f
 			break
 		}
 	}
 
-	if f != nil {
-		i.malloc = i.GetWasmFunction(f)
-	}
-
 	for _, fn := range i.startFunctionNames {
-		f := i.instance.ExportedFunction(fn)
-		if f == nil {
-			continue
+		if f, err := i.getExportsFunc(fn); err == nil {
+			if _, err := f.Call(); err != nil {
+				i.HandleError(err)
+				return errors.WrapIf(err, "could not call start function")
+			}
+
+			atomic.StoreUint32(&i.started, 1)
+
+			return nil
 		}
-
-		if _, err := f.Call(context.Background()); err != nil {
-			i.HandleError(err)
-			return err
-		}
-
-		atomic.StoreUint32(&i.started, 1)
-
-		return nil
 	}
 
 	return errors.NewWithDetails("could not start instance: start function is not exported", "functions", i.startFunctionNames)
@@ -324,12 +315,26 @@ func (i *Instance) GetExportsFunc(funcName string) (pwapi.WasmFunction, error) {
 		return nil, ErrInstanceNotStart
 	}
 
-	wf := i.instance.ExportedFunction(funcName)
-	if wf == nil {
-		return nil, ErrUnknownFunc
+	return i.getExportsFunc(funcName)
+}
+
+func (i *Instance) getExportsFunc(funcName string) (pwapi.WasmFunction, error) {
+	if v, ok := i.funcCache.Load(funcName); ok {
+		if wf, ok := v.(pwapi.WasmFunction); ok {
+			return wf, nil
+		}
 	}
 
-	return i.GetWasmFunction(wf), nil
+	f := i.instance.ExportedFunction(funcName)
+	if f == nil {
+		return nil, ErrFuncNotExported
+	}
+
+	wf := i.GetWasmFunction(f)
+
+	i.funcCache.Store(funcName, wf)
+
+	return wf, nil
 }
 
 func (i *Instance) GetWasmFunction(f api.Function) pwapi.WasmFunction {

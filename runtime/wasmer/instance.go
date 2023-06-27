@@ -58,6 +58,7 @@ type Instance struct {
 	// for cache
 	memory    *wasmerGo.Memory
 	funcCache sync.Map // string -> *wasmerGo.Function
+	malloc    api.WasmFunction
 
 	// user-defined data
 	data interface{}
@@ -191,20 +192,25 @@ func (i *Instance) Start() error {
 
 	i.instance = ins
 
+	mallocFuncNames := i.mallocFunctionNames
+	for _, fn := range mallocFuncNames {
+		if f, err := i.getExportsFunc(fn); err == nil {
+			i.malloc = f
+			break
+		}
+	}
+
 	for _, fn := range i.startFunctionNames {
-		f, err := i.instance.Exports.GetFunction(fn)
-		if err != nil {
-			continue
+		if f, err := i.getExportsFunc(fn); err == nil {
+			if _, err := f.Call(); err != nil {
+				i.HandleError(err)
+				return errors.WrapIf(err, "could not call start function")
+			}
+
+			atomic.StoreUint32(&i.started, 1)
+
+			return nil
 		}
-
-		if _, err := f(); err != nil {
-			i.HandleError(err)
-			return errors.WrapIf(err, "could not call start function")
-		}
-
-		atomic.StoreUint32(&i.started, 1)
-
-		return nil
 	}
 
 	return errors.NewWithDetails("could not start instance: start function is not exported", "functions", i.startFunctionNames)
@@ -323,20 +329,11 @@ func (i *Instance) Malloc(size int32) (uint64, error) {
 		return 0, ErrInstanceNotStart
 	}
 
-	var f api.WasmFunction
-	mallocFuncNames := i.mallocFunctionNames
-	for _, fn := range mallocFuncNames {
-		if fn, err := i.GetExportsFunc(fn); err == nil {
-			f = fn
-			break
-		}
-	}
-
-	if f == nil {
+	if i.malloc == nil {
 		return 0, ErrMallocFunctionNotFound
 	}
 
-	addr, err := f.Call(size)
+	addr, err := i.malloc.Call(size)
 	if err != nil {
 		i.HandleError(err)
 		return 0, err
@@ -354,6 +351,10 @@ func (i *Instance) GetExportsFunc(funcName string) (api.WasmFunction, error) {
 		return nil, ErrInstanceNotStart
 	}
 
+	return i.getExportsFunc(funcName)
+}
+
+func (i *Instance) getExportsFunc(funcName string) (api.WasmFunction, error) {
 	if v, ok := i.funcCache.Load(funcName); ok {
 		if f, ok := v.(*wasmerGo.Function); ok {
 			return &wasmFunction{name: funcName, logger: i.logger, fn: f}, nil

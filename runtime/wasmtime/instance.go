@@ -47,6 +47,7 @@ var (
 	ErrGetExportsMemNotImplemented = errors.New("GetExportsMem not implemented")
 	ErrMallocFunctionNotFound      = errors.New("could not find memory allocate function")
 	ErrMalloc                      = errors.New("could not allocate memory")
+	ErrFuncNotExported             = errors.New("function is not exported")
 )
 
 type Instance struct {
@@ -62,6 +63,9 @@ type Instance struct {
 	module   *Module
 	instance *wasmtime.Instance
 	memory   *wasmtime.Memory
+
+	malloc    api.WasmFunction
+	funcCache sync.Map
 
 	hostModules map[string][]hostFunc
 
@@ -168,20 +172,25 @@ func (i *Instance) Start() error {
 		return err
 	}
 
+	mallocFuncNames := i.mallocFunctionNames
+	for _, fn := range mallocFuncNames {
+		if f, err := i.getExportsFunc(fn); err == nil {
+			i.malloc = f
+			break
+		}
+	}
+
 	for _, fn := range i.startFunctionNames {
-		f := i.instance.GetFunc(i.store, fn)
-		if f == nil {
-			continue
+		if f, err := i.getExportsFunc(fn); err == nil {
+			if _, err := f.Call(); err != nil {
+				i.HandleError(err)
+				return errors.WrapIf(err, "could not call start function")
+			}
+
+			atomic.StoreUint32(&i.started, 1)
+
+			return nil
 		}
-
-		if _, err := f.Call(i.store); err != nil {
-			i.HandleError(err)
-			return err
-		}
-
-		atomic.StoreUint32(&i.started, 1)
-
-		return nil
 	}
 
 	return errors.NewWithDetails("could not start instance: start function is not exported", "functions", i.startFunctionNames)
@@ -266,31 +275,11 @@ func (i *Instance) Malloc(size int32) (uint64, error) {
 		return 0, ErrInstanceNotStart
 	}
 
-	var f *wasmtime.Func
-	mallocFuncNames := i.mallocFunctionNames
-	var mallocFuncName string
-	for _, fn := range mallocFuncNames {
-		if f == nil {
-			f = i.instance.GetFunc(i.store, fn)
-		}
-		if f != nil {
-			mallocFuncName = fn
-			break
-		}
-	}
-
-	if f == nil {
+	if i.malloc == nil {
 		return 0, ErrMallocFunctionNotFound
 	}
 
-	malloc := &Call{
-		Func:   f,
-		name:   mallocFuncName,
-		store:  i.store,
-		logger: i.logger,
-	}
-
-	addr, err := malloc.Call(size)
+	addr, err := i.malloc.Call(size)
 	if err != nil {
 		i.HandleError(err)
 		return 0, err
@@ -334,14 +323,31 @@ func (i *Instance) GetExportsFunc(funcName string) (api.WasmFunction, error) {
 		return nil, ErrInstanceNotStart
 	}
 
-	f := &Call{
-		Func:   i.instance.GetFunc(i.store, funcName),
+	return i.getExportsFunc(funcName)
+}
+
+func (i *Instance) getExportsFunc(funcName string) (api.WasmFunction, error) {
+	if v, ok := i.funcCache.Load(funcName); ok {
+		if wf, ok := v.(*Call); ok {
+			return wf, nil
+		}
+	}
+
+	f := i.instance.GetFunc(i.store, funcName)
+	if f == nil {
+		return nil, ErrFuncNotExported
+	}
+
+	wf := &Call{
+		Func:   f,
 		name:   funcName,
 		store:  i.store,
 		logger: i.logger,
 	}
 
-	return f, nil
+	i.funcCache.Store(funcName, wf)
+
+	return wf, nil
 }
 
 func (i *Instance) GetExportsMem(memName string) ([]byte, error) {
