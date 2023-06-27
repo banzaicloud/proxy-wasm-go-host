@@ -188,6 +188,21 @@ func (i *Instance) Start() error {
 
 	i.instance = ins
 
+	var f api.Function
+	mallocFuncNames := i.mallocFunctionNames
+	for _, fn := range mallocFuncNames {
+		if f == nil {
+			f = i.instance.ExportedFunction(fn)
+		}
+		if f != nil {
+			break
+		}
+	}
+
+	if f != nil {
+		i.malloc = i.GetWasmFunction(f)
+	}
+
 	for _, fn := range i.startFunctionNames {
 		f := i.instance.ExportedFunction(fn)
 		if f == nil {
@@ -203,23 +218,6 @@ func (i *Instance) Start() error {
 
 		return nil
 	}
-
-	var f api.Function
-	mallocFuncNames := i.mallocFunctionNames
-	for _, fn := range mallocFuncNames {
-		if f == nil {
-			f = i.instance.ExportedFunction(fn)
-		}
-		if f != nil {
-			break
-		}
-	}
-
-	if f == nil {
-		return ErrMallocFunctionNotFound
-	}
-
-	i.malloc = i.GetWasmFunction(f)
 
 	return errors.NewWithDetails("could not start instance: start function is not exported", "functions", i.startFunctionNames)
 }
@@ -302,6 +300,10 @@ func (i *Instance) registerImports() error {
 func (i *Instance) Malloc(size int32) (uint64, error) {
 	if !i.checkStart() {
 		return 0, ErrInstanceNotStart
+	}
+
+	if i.malloc == nil {
+		return 0, ErrMallocFunctionNotFound
 	}
 
 	addr, err := i.malloc.Call(size)

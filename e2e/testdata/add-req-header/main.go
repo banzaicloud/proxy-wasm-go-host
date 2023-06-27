@@ -59,6 +59,12 @@ type httpHeaders struct {
 
 // Override types.DefaultHttpContext.
 func (ctx *httpHeaders) OnHttpRequestHeaders(numHeaders int, endOfStream bool) types.Action {
+	if _, err := proxywasm.GetHttpRequestHeaders(); err != nil {
+		proxywasm.LogCritical(err.Error())
+
+		return types.ActionContinue
+	}
+
 	key := "Wasm-Context"
 	err := proxywasm.ReplaceHttpRequestHeader(key, strconv.Itoa(int(ctx.contextID)))
 	if err != nil {

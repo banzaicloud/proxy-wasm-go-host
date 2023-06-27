@@ -160,3 +160,9 @@ type headersHandler struct {
 func (im *headersHandler) GetHttpRequestHeader() api.HeaderMap {
 	return im.reqHeader
 }
+
+func (im *headersHandler) Log(level api.LogLevel, msg string) api.WasmResult {
+	fmt.Println(msg)
+
+	return api.WasmResultOk
+}
