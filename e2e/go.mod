@@ -22,7 +22,7 @@ require (
 	github.com/bytecodealliance/wasmtime-go/v3 v3.0.2 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/tetratelabs/wazero v1.0.0-pre.8 // indirect
+	github.com/tetratelabs/wazero v1.2.1 // indirect
 	github.com/wasmerio/wasmer-go v1.0.4 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
