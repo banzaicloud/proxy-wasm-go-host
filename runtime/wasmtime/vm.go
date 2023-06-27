@@ -18,7 +18,7 @@ import (
 	"context"
 
 	"emperror.dev/errors"
-	"github.com/bytecodealliance/wasmtime-go/v3"
+	"github.com/bytecodealliance/wasmtime-go/v9"
 	"github.com/go-logr/logr"
 	klog "k8s.io/klog/v2"
 

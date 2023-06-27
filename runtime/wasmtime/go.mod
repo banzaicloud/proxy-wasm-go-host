@@ -1,4 +1,4 @@
-module github.com/banzaicloud/proxy-wasm-go-host/runtime/wasmtime/v3
+module github.com/banzaicloud/proxy-wasm-go-host/runtime/wasmtime/v9
 
 go 1.18
 
@@ -7,7 +7,7 @@ replace github.com/banzaicloud/proxy-wasm-go-host => ../../
 require (
 	emperror.dev/errors v0.8.1
 	github.com/banzaicloud/proxy-wasm-go-host v1.0.1
-	github.com/bytecodealliance/wasmtime-go/v3 v3.0.2
+	github.com/bytecodealliance/wasmtime-go/v9 v9.0.0
 	github.com/go-logr/logr v1.2.3
 	github.com/golang/mock v1.6.0
 	github.com/stretchr/testify v1.8.1

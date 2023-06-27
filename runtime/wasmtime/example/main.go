@@ -29,7 +29,7 @@ import (
 
 	"github.com/banzaicloud/proxy-wasm-go-host/abi"
 	"github.com/banzaicloud/proxy-wasm-go-host/api"
-	"github.com/banzaicloud/proxy-wasm-go-host/runtime/wasmtime/v3"
+	"github.com/banzaicloud/proxy-wasm-go-host/runtime/wasmtime/v9"
 )
 
 var (
