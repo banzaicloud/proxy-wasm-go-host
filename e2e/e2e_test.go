@@ -58,14 +58,15 @@ func testStartABIContext(t *testing.T, vm api.WasmVM) {
 }
 
 func startABIContext(instance api.WasmInstance) (wasmCtx api.ABIContext, err error) {
-	// create ABI context
-	wasmCtx, err = abi.NewContext(&abi.DefaultImportsHandler{}, instance)
+	// start the wasm vm instance
+	err = instance.Start()
 	if err != nil {
 		return
 	}
 
-	// start the wasm vm instance
-	err = instance.Start()
+	// create ABI context
+	wasmCtx = abi.NewContext(&abi.DefaultImportsHandler{}, instance)
+
 	return
 }
 
